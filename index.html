@@ -1093,116 +1093,123 @@
         // ⭐⭐⭐ UPDATED: Load Live Sheet via Worker (API v4) ⭐⭐⭐
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         async function loadLiveSheet(sheetId, gid) {
-            const el = document.getElementById('quickTableDisplay');
-            if (!el) return;
-            
-            el.innerHTML = `<div class="text-center py-8 text-slate-400">
-                <div style="width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
-                <p class="text-sm">Loading sheet data...</p>
-            </div>`;
-            
-            try {
-                // Call the Worker with sheet type - uses API v4
-                const workerUrl = `${DRIVE_PROXY_URL}?type=sheet&sheetId=${sheetId}&sheetName=Sheet1`;
-                
-                const response = await fetch(workerUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`Worker error: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                
-                if (result.error) {
-                    throw new Error(result.error);
-                }
-                
-                if (result.success && result.data) {
-                    // Parse the API v4 data into an HTML table with formatting
-                    const tableHtml = parseSheetDataToHtml(result.data);
-                    
-                    el.innerHTML = `
-                        <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:auto;max-height:650px;background:white;">
-                            ${tableHtml}
-                        </div>
-                        <div class="text-xs text-slate-400 mt-2 text-center">
-                            <i class="fas fa-sync-alt"></i> Auto-updates from Google Sheets
-                        </div>`;
-                } else {
-                    throw new Error('Invalid response from Worker');
-                }
-                
-            } catch (e) {
-                el.innerHTML = `
-                    <div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
-                        ⚠️ Could not load styled sheet.<br>
-                        <span class="text-xs">${e.message}</span><br><br>
-                        <button onclick="loadEmbedSheet('${sheetId}','${gid || '0'}')" 
-                                class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
-                            <i class="fas fa-eye"></i> Switch to Full Formatting
-                        </button>
-                        <button onclick="loadLiveSheet('${sheetId}','${gid || '0'}')" 
-                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
-                            <i class="fas fa-sync-alt"></i> Retry
-                        </button>
-                    </div>`;
-            }
+    const el = document.getElementById('quickTableDisplay');
+    if (!el) return;
+    
+    el.innerHTML = `<div class="text-center py-8 text-slate-400">
+        <div style="width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
+        <p class="text-sm">Loading sheet with formatting...</p>
+    </div>`;
+    
+    try {
+        // Call the Worker with formatting
+        const workerUrl = `${DRIVE_PROXY_URL}?type=sheet&sheetId=${sheetId}&sheetName=Sheet1`;
+        
+        const response = await fetch(workerUrl);
+        
+        if (!response.ok) {
+            throw new Error(`Worker error: ${response.status}`);
         }
+        
+        const result = await response.json();
+        
+        if (result.error) {
+            throw new Error(result.error);
+        }
+        
+        if (result.success && result.rows) {
+            // Parse the data with formatting
+            const tableHtml = parseSheetDataToHtml(result);
+            
+            el.innerHTML = `
+                <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:auto;max-height:650px;background:white;">
+                    ${tableHtml}
+                </div>
+                <div class="text-xs text-slate-400 mt-2 text-center">
+                    <i class="fas fa-sync-alt"></i> Auto-updates from Google Sheets
+                </div>`;
+        } else {
+            throw new Error('Invalid response from Worker');
+        }
+        
+    } catch (e) {
+        el.innerHTML = `
+            <div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
+                 Could not load styled sheet.<br>
+                <span class="text-xs">${e.message}</span><br><br>
+                <button onclick="loadEmbedSheet('${sheetId}','${gid || '0'}')" 
+                        class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                    <i class="fas fa-eye"></i> Switch to Full Formatting
+                </button>
+                <button onclick="loadLiveSheet('${sheetId}','${gid || '0'}')" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                    <i class="fas fa-sync-alt"></i> Retry
+                </button>
+            </div>`;
+    }
+}
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // ⭐⭐⭐ UPDATED: Parse Google Sheets API v4 Data ⭐⭐⭐
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function parseSheetDataToHtml(data) {
-            if (!data || !data.values || data.values.length === 0) {
-                return '<div class="text-center py-8 text-slate-400">No data found in sheet</div>';
+    if (!data || !data.rows || data.rows.length === 0) {
+        return '<div class="text-center py-8 text-slate-400">No data found in sheet</div>';
+    }
+    
+    const rows = data.rows;
+    
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
+    
+    rows.forEach((row, rowIndex) => {
+        html += '<tr>';
+        
+        // Find max columns in this row
+        const maxCols = row.length;
+        
+        for (let colIndex = 0; colIndex < maxCols; colIndex++) {
+            const cell = row[colIndex] || { value: '', bold: false };
+            let style = 'padding:10px 12px;border:1px solid #e2e8f0;';
+            
+            //  Apply actual formatting from Google Sheets
+            if (cell.bold) {
+                style += 'font-weight:bold;';
+            }
+            if (cell.italic) {
+                style += 'font-style:italic;';
+            }
+            if (cell.underline) {
+                style += 'text-decoration:underline;';
+            }
+            if (cell.bgColor) {
+                style += `background-color:${cell.bgColor};`;
+            }
+            if (cell.textColor) {
+                style += `color:${cell.textColor};`;
+            }
+            if (cell.fontSize) {
+                style += `font-size:${cell.fontSize}pt;`;
             }
             
-            const rows = data.values;
+            // If no formatting, apply default header style for first two rows
+            if (rowIndex === 0 || rowIndex === 1) {
+                style += 'font-weight:bold;background:#0d9488;color:white;';
+            }
             
-            let html = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
+            // Alternate row colors for data rows
+            if (rowIndex > 1 && rowIndex % 2 === 1 && !cell.bgColor) {
+                style += 'background:#f8fafc;';
+            }
             
-            rows.forEach((row, rowIndex) => {
-                html += '<tr>';
-                const isHeader = rowIndex === 0;
-                
-                // Find the maximum number of columns in this row
-                const maxCols = Math.max(...rows.map(r => r.length));
-                
-                for (let colIndex = 0; colIndex < maxCols; colIndex++) {
-                    let cell = row[colIndex] || '';
-                    let style = 'padding:10px 12px;border:1px solid #e2e8f0;';
-                    
-                    if (isHeader) {
-                        style += 'font-weight:bold;background:#0d9488;color:white;';
-                    } else if (rowIndex % 2 === 1) {
-                        style += 'background:#f8fafc;';
-                    }
-                    
-                    // Check if cell has formatting markers
-                    if (typeof cell === 'string') {
-                        // Detect bold (simple detection)
-                        if (cell.includes('*') && cell.startsWith('*') && cell.endsWith('*')) {
-                            style += 'font-weight:bold;';
-                            cell = cell.slice(1, -1);
-                        }
-                        // Detect colored text
-                        if (cell.includes('#')) {
-                            const colorMatch = cell.match(/#([A-Fa-f0-9]{6})/);
-                            if (colorMatch) {
-                                style += `color:#${colorMatch[1]};`;
-                            }
-                        }
-                    }
-                    
-                    const tag = isHeader ? 'th' : 'td';
-                    html += `<${tag} style="${style}">${cell}</${tag}>`;
-                }
-                html += '</tr>';
-            });
-            
-            html += '</table>';
-            return html;
+            const tag = (rowIndex === 0 || rowIndex === 1) ? 'th' : 'td';
+            html += `<${tag} style="${style}">${cell.value || ''}</${tag}>`;
         }
+        html += '</tr>';
+    });
+    
+    html += '</table>';
+    return html;
+}
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // NAVIGATION
