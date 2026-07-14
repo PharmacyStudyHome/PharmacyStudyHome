@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <title>Pharmacy Study Home - FIXED!</title>
+    <title>Pharmacy Study Home</title>
     
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -562,7 +562,6 @@
         let firebaseReady = false;
         const ADMIN_EMAIL = 'admin@psh.app';
         const GDRIVE_ROOT_FOLDER = '15pDtlHszZTCj79tielgIJ0kUWoW9ymGN';
-        // ⭐ UPDATE THIS WITH YOUR WORKER URL ⭐
         const DRIVE_PROXY_URL = 'https://psh-drive-proxy.pharmacystudyhub685.workers.dev/';
         
         try {
@@ -979,7 +978,9 @@
             showPage('subject');
         }
         
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // ⭐⭐⭐ UPDATED: Render Quick Page with Sheet Support ⭐⭐⭐
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function renderQuickPage() {
             const qaId = pageStack[pageStack.length - 1] || '';
             const item = quickAccess.find(q => q.id === qaId);
@@ -991,7 +992,6 @@
             
             const content = quickContent[qaId] || '';
             const subItems = quickSubItems[qaId] || [];
-            const tableData = quickTables[qaId] || null;
             
             document.getElementById('quickPageContent').innerHTML = `
                 <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-3xl p-8 mb-6 relative">
@@ -1090,7 +1090,7 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ⭐⭐⭐ UPDATED: Load Live Sheet via Worker ⭐⭐⭐
+        // ⭐⭐⭐ UPDATED: Load Live Sheet via Worker (API v4) ⭐⭐⭐
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         async function loadLiveSheet(sheetId, gid) {
             const el = document.getElementById('quickTableDisplay');
@@ -1098,12 +1098,12 @@
             
             el.innerHTML = `<div class="text-center py-8 text-slate-400">
                 <div style="width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
-                <p class="text-sm">Loading sheet with formatting...</p>
+                <p class="text-sm">Loading sheet data...</p>
             </div>`;
             
             try {
-                // Call the Worker with sheet type
-                const workerUrl = `${DRIVE_PROXY_URL}?type=sheet&sheetId=${sheetId}&gid=${gid || 'od6'}`;
+                // Call the Worker with sheet type - uses API v4
+                const workerUrl = `${DRIVE_PROXY_URL}?type=sheet&sheetId=${sheetId}&sheetName=Sheet1`;
                 
                 const response = await fetch(workerUrl);
                 
@@ -1118,8 +1118,8 @@
                 }
                 
                 if (result.success && result.data) {
-                    // Parse the feed data into an HTML table with formatting
-                    const tableHtml = parseFeedToHtml(result.data);
+                    // Parse the API v4 data into an HTML table with formatting
+                    const tableHtml = parseSheetDataToHtml(result.data);
                     
                     el.innerHTML = `
                         <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:auto;max-height:650px;background:white;">
@@ -1133,7 +1133,6 @@
                 }
                 
             } catch (e) {
-                // Fallback to iframe
                 el.innerHTML = `
                     <div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
                         ⚠️ Could not load styled sheet.<br>
@@ -1142,7 +1141,7 @@
                                 class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
                             <i class="fas fa-eye"></i> Switch to Full Formatting
                         </button>
-                        <button onclick="loadLiveSheet('${sheetId}','${gid || 'od6'}')" 
+                        <button onclick="loadLiveSheet('${sheetId}','${gid || '0'}')" 
                                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
                             <i class="fas fa-sync-alt"></i> Retry
                         </button>
@@ -1151,104 +1150,58 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ⭐⭐⭐ PARSE FEED TO HTML (Preserves Formatting) ⭐⭐⭐
+        // ⭐⭐⭐ UPDATED: Parse Google Sheets API v4 Data ⭐⭐⭐
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function parseFeedToHtml(data) {
-            if (!data || !data.feed || !data.feed.entry) {
+        function parseSheetDataToHtml(data) {
+            if (!data || !data.values || data.values.length === 0) {
                 return '<div class="text-center py-8 text-slate-400">No data found in sheet</div>';
             }
             
-            const entries = data.feed.entry || [];
-            const cellData = {};
-            let maxRow = 0;
-            let maxCol = 0;
+            const rows = data.values;
             
-            // Parse all cells from the feed
-            entries.forEach(entry => {
-                const cell = entry.title.$t;
-                const match = cell.match(/([A-Z]+)(\d+)/);
-                if (match) {
-                    const col = columnToIndex(match[1]);
-                    const row = parseInt(match[2]);
-                    maxRow = Math.max(maxRow, row);
-                    maxCol = Math.max(maxCol, col);
-                    
-                    const cellKey = `${row},${col}`;
-                    cellData[cellKey] = {
-                        value: entry.content ? entry.content.$t || '' : '',
-                        // Parse any inline styles from the cell
-                        style: entry.gs$cell ? entry.gs$cell.$t || '' : ''
-                    };
-                }
-            });
-            
-            // If no data, show empty
-            if (maxRow === 0 || maxCol === 0) {
-                return '<div class="text-center py-8 text-slate-400">Sheet is empty</div>';
-            }
-            
-            // Build HTML table with styling
             let html = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
             
-            for (let row = 1; row <= maxRow; row++) {
+            rows.forEach((row, rowIndex) => {
                 html += '<tr>';
-                for (let col = 1; col <= maxCol; col++) {
-                    const key = `${row},${col}`;
-                    const cell = cellData[key] || { value: '', style: '' };
-                    
-                    // Build style string
+                const isHeader = rowIndex === 0;
+                
+                // Find the maximum number of columns in this row
+                const maxCols = Math.max(...rows.map(r => r.length));
+                
+                for (let colIndex = 0; colIndex < maxCols; colIndex++) {
+                    let cell = row[colIndex] || '';
                     let style = 'padding:10px 12px;border:1px solid #e2e8f0;';
                     
-                    // Apply formatting from cell style
-                    if (cell.style) {
-                        // Bold
-                        if (cell.style.includes('bold') || cell.style.includes('font-weight: bold')) {
+                    if (isHeader) {
+                        style += 'font-weight:bold;background:#0d9488;color:white;';
+                    } else if (rowIndex % 2 === 1) {
+                        style += 'background:#f8fafc;';
+                    }
+                    
+                    // Check if cell has formatting markers
+                    if (typeof cell === 'string') {
+                        // Detect bold (simple detection)
+                        if (cell.includes('*') && cell.startsWith('*') && cell.endsWith('*')) {
                             style += 'font-weight:bold;';
+                            cell = cell.slice(1, -1);
                         }
-                        // Italic
-                        if (cell.style.includes('italic') || cell.style.includes('font-style: italic')) {
-                            style += 'font-style:italic;';
-                        }
-                        // Underline
-                        if (cell.style.includes('underline') || cell.style.includes('text-decoration: underline')) {
-                            style += 'text-decoration:underline;';
-                        }
-                        // Background color
-                        const bgMatch = cell.style.match(/background-color:\s*([^;]+)/);
-                        if (bgMatch) {
-                            style += `background-color:${bgMatch[1]};`;
-                        }
-                        // Text color
-                        const colorMatch = cell.style.match(/color:\s*([^;]+)/);
-                        if (colorMatch) {
-                            style += `color:${colorMatch[1]};`;
-                        }
-                        // Text alignment
-                        const alignMatch = cell.style.match(/text-align:\s*([^;]+)/);
-                        if (alignMatch) {
-                            style += `text-align:${alignMatch[1]};`;
+                        // Detect colored text
+                        if (cell.includes('#')) {
+                            const colorMatch = cell.match(/#([A-Fa-f0-9]{6})/);
+                            if (colorMatch) {
+                                style += `color:#${colorMatch[1]};`;
+                            }
                         }
                     }
                     
-                    // Check if it's a header row (row 1 or if it has bold styling)
-                    const isHeader = row === 1 || style.includes('font-weight:bold');
                     const tag = isHeader ? 'th' : 'td';
-                    
-                    html += `<${tag} style="${style}">${cell.value || ''}</${tag}>`;
+                    html += `<${tag} style="${style}">${cell}</${tag}>`;
                 }
                 html += '</tr>';
-            }
+            });
             
             html += '</table>';
             return html;
-        }
-        
-        function columnToIndex(column) {
-            let index = 0;
-            for (let i = 0; i < column.length; i++) {
-                index = index * 26 + (column.charCodeAt(i) - 64);
-            }
-            return index;
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
