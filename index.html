@@ -565,6 +565,7 @@
         let db = null;
         let auth = null;
         let firebaseReady = false;
+        // ⚠️ Replace with the email you created in Firebase Console → Authentication → Users
         const ADMIN_EMAIL = 'admin@psh.app';
         const GDRIVE_ROOT_FOLDER = '15pDtlHszZTCj79tielgIJ0kUWoW9ymGN';
         const DRIVE_PROXY_URL = 'https://psh-drive-proxy.pharmacystudyhub685.workers.dev/';
@@ -628,7 +629,7 @@
         let currentPage = 'home';
         let currentProfId = null;
         let currentSubjectId = null;
-        let currentTab = 'note';  
+        let currentTab = 'note';  // ⭐ FIXED: Changed from 'notes' to 'note'
         let pageStack = [];
         let toastTimer = null;
         let liveSheetInterval = null;
@@ -637,8 +638,10 @@
         // INITIALIZATION
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         async function init() {
+            // Set defaults immediately so something shows while Firebase loads
             loadFromLocalStorage();
             
+            // Show loading screen while Firebase loads
             document.getElementById('appContent').style.display = 'none';
             document.getElementById('loadingScreen').style.display = 'flex';
             
@@ -660,6 +663,7 @@
         }
         
         function loadFromLocalStorage() {
+            // Set defaults as starting state before Firebase loads
             profs = [...DEFAULT_PROFS];
             subjects = JSON.parse(JSON.stringify(DEFAULT_SUBJECTS));
             resources = [...DEFAULT_RESOURCES];
@@ -671,7 +675,7 @@
         }
         
         function saveToLocalStorage() {
-            // No-op: Firebase is single source of truth
+            // No-op: Firebase is the single source of truth
         }
         
         async function loadFromFirebase() {
@@ -681,6 +685,7 @@
             if (data.profs) {
                 const fbProfs = Object.values(data.profs);
                 if (fbProfs.length > 0) profs = fbProfs;
+                // else keep DEFAULT_PROFS set in loadFromLocalStorage
             }
             
             if (data.subjects) {
@@ -698,6 +703,7 @@
             if (data.quickAccess) {
                 const fbQA = Object.values(data.quickAccess);
                 if (fbQA.length > 0) quickAccess = fbQA;
+                // else keep DEFAULT_QUICK_ACCESS
             }
             
             if (data.quickContent) quickContent = data.quickContent;
@@ -708,11 +714,13 @@
                 });
             }
             if (data.quickTables) quickTables = data.quickTables;
+            // Only use Firebase welcome if it has a real title
             if (data.welcomeContent && data.welcomeContent.title && data.welcomeContent.title.length > 5) {
                 welcomeContent = data.welcomeContent;
             }
         }
         
+        // Called once after admin logs in — saves any defaults missing from Firebase
         async function seedMissingFirebaseData() {
             const snap = await db.ref('/').once('value');
             const data = snap.val() || {};
@@ -747,46 +755,6 @@
                     }
                 }
             });
-        }
-        
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // 📝 LIGHTWEIGHT FORMATTING / MARKDOWN PARSER
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function parseMarkdown(text) {
-            if (!text) return '';
-            
-            // Basic HTML safe-escaping
-            let html = text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-
-            // Bold (**bold**)
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>');
-            html = html.replace(/__(.*?)__/g, '<strong class="font-bold text-slate-900">$1</strong>');
-
-            // Italics (*italics*)
-            html = html.replace(/\*(.*?)\*/g, '<em class="italic text-slate-800">$1</em>');
-            html = html.replace(/_(.*?)_/g, '<em class="italic text-slate-800">$1</em>');
-
-            // Inline Code (`code`)
-            html = html.replace(/`(.*?)`/g, '<code class="bg-slate-100 text-teal-700 px-1.5 py-0.5 rounded font-mono text-xs font-semibold">$1</code>');
-
-            // Bullet Lists (* or - at start of line)
-            html = html.split('\n').map(line => {
-                const cleanLine = line.trim();
-                if (cleanLine.startsWith('* ') || cleanLine.startsWith('- ')) {
-                    return `<li class="list-disc ml-5 my-1 text-slate-700 text-sm">${cleanLine.substring(2)}</li>`;
-                }
-                return line;
-            }).join('\n');
-
-            // Handle carriage-returns / proper breaks
-            html = html.replace(/\n/g, '<br>');
-            
-            return html;
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -834,6 +802,7 @@
                 qaGrid.parentElement.appendChild(addBtn);
             }
             
+            // Drive Files button — always visible
             const driveBtn = document.createElement('button');
             driveBtn.className = 'bg-white hover:bg-blue-50 border border-gray-200 rounded-2xl p-4 text-center transition card-hover';
             driveBtn.innerHTML = `
@@ -893,6 +862,7 @@
                 });
             }
             
+            // Show Drive Files section if this prof has a linked Drive folder
             const driveSectionEl = document.getElementById('profDriveSection');
             if (prof && prof.driveFolder) {
                 driveSectionEl.style.display = 'block';
@@ -910,6 +880,7 @@
             showPage('prof');
         }
         
+        // ⭐⭐⭐ FIXED: renderSubjectPage - tab values now match resource types ⭐⭐⭐
         function renderSubjectPage() {
             console.log('🎨 Rendering subject page for:', currentSubjectId, '| Tab:', currentTab);
             
@@ -917,6 +888,7 @@
             let subjectIcon = '📖';
             let subjectObj = null;
             
+            // Find subject name
             for (const pid in subjects) {
                 const found = subjects[pid].find(s => s.id === currentSubjectId);
                 if (found) { 
@@ -929,6 +901,7 @@
             
             document.getElementById('subjectPageTitle').textContent = `${subjectIcon} ${subjectName}`;
             
+            // Show Drive Files section if this subject has a linked Drive folder
             const subjectDriveSectionEl = document.getElementById('subjectDriveSection');
             if (subjectObj && subjectObj.driveFolder) {
                 subjectDriveSectionEl.style.display = 'block';
@@ -945,25 +918,29 @@
             
             const container = document.getElementById('subjectContent');
             
+            // ⭐ FIXED: Now currentTab matches resource.type exactly (both are 'note', 'file', 'link')
             const filtered = resources.filter(r => {
                 if (!r.subjectId || !r.type) return false;
                 
                 const subjectIdMatch = String(r.subjectId).trim() === String(currentSubjectId).trim();
                 const typeMatch = String(r.type).trim() === String(currentTab).trim();
                 
+                console.log(`Checking "${r.title}": subjectId match=${subjectIdMatch}, type match=${typeMatch} (res.type="${r.type}", currentTab="${currentTab}")`);
+                
                 return subjectIdMatch && typeMatch;
             });
+            
+            console.log(`📊 Filtered for ${currentTab}: ${filtered.length} / ${resources.length} total`);
             
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="empty-state"><span class="icon">📭</span>No ${currentTab}s found. Admin can add resources.</div>`;
             } else {
                 container.innerHTML = filtered.map(item => {
                     if (item.type === 'note') {
-                        // NOTE RENDER: Replaced Plain text paragraph container with parseMarkdown inside a div
                         return `
                             <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 relative">
                                 <h4 class="font-bold text-slate-800 mb-2">${item.title}</h4>
-                                <div class="text-slate-600 text-sm leading-relaxed">${parseMarkdown(item.content || '')}</div>
+                                <p class="text-slate-600 text-sm whitespace-pre-line">${item.content || ''}</p>
                                 <div class="admin-controls absolute top-2 right-2 gap-1">
                                     <button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
                                     <button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
@@ -1059,7 +1036,7 @@
                 </div>
                 ${content ? `<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
                     <h3 class="font-semibold text-slate-800 mb-2">📝 Content</h3>
-                    <div class="text-slate-600 text-sm leading-relaxed">${parseMarkdown(content)}</div>
+                    <p class="text-slate-600 whitespace-pre-line">${content}</p>
                 </div>` : ''}
                 
                 ${item.driveFolder ? `<div class="mb-6">
@@ -1074,17 +1051,24 @@
                 </div>` : ''}
                 
                 <div class="mb-6">
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
                         <h3 class="font-semibold text-slate-800">📊 Table</h3>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 flex-wrap">
                             ${isAdmin ? `<button onclick="openSheetLinkModal('${qaId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition"><i class="fab fa-google"></i> ${item.sheetId ? 'Change' : 'Link'} Sheet</button>` : ''}
                             ${isAdmin && item.sheetId ? `<button onclick="unlinkSheet('${qaId}')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-xl text-sm font-semibold transition">Unlink</button>` : ''}
                             ${isAdmin && !item.sheetId ? `<button onclick="openTableEditorModal('${qaId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition">✏️ Edit Table</button>` : ''}
                         </div>
                     </div>
-                    ${item.sheetId ? `<div class="text-xs text-slate-400 mb-2"><i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically</div>` : ''}
+                    ${item.sheetId ? `<div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                        <div class="text-xs text-slate-400"><i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically</div>
+                        <div class="flex text-xs rounded-lg overflow-hidden border border-gray-200">
+                            <button onclick="setSheetMode('${qaId}','data')" class="px-3 py-1.5 font-semibold ${(!item.sheetMode || item.sheetMode==='data') ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Styled Data</button>
+                            <button onclick="setSheetMode('${qaId}','embed')" class="px-3 py-1.5 font-semibold ${item.sheetMode==='embed' ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Full Formatting</button>
+                        </div>
+                    </div>` : ''}
                     <div id="quickTableDisplay"></div>
                 </div>
+
                 
                 <h3 class="font-semibold text-slate-800 mb-3">🔗 Links & Resources</h3>
                 <div id="quickSubItemsList" class="space-y-2"></div>
@@ -1094,8 +1078,12 @@
             
             if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
             if (item.sheetId) {
-                loadLiveSheet(item.sheetId, item.sheetGid);
-                liveSheetInterval = setInterval(() => loadLiveSheet(item.sheetId, item.sheetGid), 20000);
+                if (item.sheetMode === 'embed') {
+                    loadEmbedSheet(item.sheetId, item.sheetGid);
+                } else {
+                    loadLiveSheet(item.sheetId, item.sheetGid);
+                    liveSheetInterval = setInterval(() => loadLiveSheet(item.sheetId, item.sheetGid), 20000);
+                }
             } else {
                 renderQuickTable(qaId);
             }
@@ -1225,10 +1213,10 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // TABS
+        // TABS - ⭐ FIXED: Now uses 'note', 'file', 'link' (without "s") ⭐
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function switchTab(tab) {
-            currentTab = tab;  
+            currentTab = tab;  // tab will be 'note', 'file', or 'link'
             
             document.querySelectorAll('[id^="tab-"]').forEach(el => {
                 el.classList.remove('border-teal-600', 'text-teal-600');
@@ -1341,7 +1329,7 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ADMIN
+        // ADMIN (secured via Firebase Authentication)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function openChangePasswordModal() {
             if (!isAdmin) {
@@ -1373,6 +1361,7 @@
             }
             
             try {
+                // Re-authenticate first since Firebase requires a recent login to change password
                 const cred = firebase.auth.EmailAuthProvider.credential(ADMIN_EMAIL, current);
                 await auth.currentUser.reauthenticateWithCredential(cred);
                 await auth.currentUser.updatePassword(newPass);
@@ -1400,7 +1389,7 @@
                 try {
                     await auth.signInWithEmailAndPassword(ADMIN_EMAIL, pass);
                     isAdmin = true;
-                    seedMissingFirebaseData(); 
+                    seedMissingFirebaseData(); // fill any missing defaults into Firebase
                     toast('✅ Admin Mode Activated', 'success');
                     document.getElementById('adminBtnText').textContent = 'Admin 👑';
                     document.querySelector('#fabAdmin i').className = 'fas fa-unlock';
@@ -1679,9 +1668,12 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // RESOURCE CRUD
+        // ⭐⭐⭐ FIXED RESOURCE CRUD ⭐⭐⭐
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function openAddResourceModal() {
+            console.log('📝 Opening Add Resource Modal');
+            console.log('📝 Current Subject ID:', currentSubjectId);
+            
             document.getElementById('resourceModalTitle').textContent = 'Add Resource';
             document.getElementById('resourceEditId').value = '';
             document.getElementById('resourceSubjectId').value = currentSubjectId || '';
@@ -1715,16 +1707,23 @@
             openModal('resourceModal');
         }
         
+        // ⭐⭐⭐ CRITICAL FIX: Properly save resource ⭐⭐⭐
         async function saveResource() {
+            console.log('💾 ===== SAVING RESOURCE =====');
+            
+            // Get ALL form values directly
             const id = document.getElementById('resourceEditId').value;
             const subjectId = document.getElementById('resourceSubjectId').value;
-            const type = document.getElementById('resourceType').value;  
+            const type = document.getElementById('resourceType').value;  // 'note', 'file', or 'link'
             const title = document.getElementById('resourceTitle').value.trim();
             const content = document.getElementById('resourceContent').value.trim();
             const url = document.getElementById('resourceUrl').value.trim();
             const fileType = document.getElementById('resourceFileType').value.trim();
             const fileSize = document.getElementById('resourceFileSize').value.trim();
             
+            console.log('📦 Form values:', { id, subjectId, type, title });
+            
+            // Validation
             if (!title) {
                 toast('⚠️ Please enter a title', 'error');
                 return;
@@ -1735,13 +1734,15 @@
                 return;
             }
             
+            // ⭐ CRITICAL: Build the resource data object with type matching tab values
             const resData = {
                 id: id || 'r_' + Date.now(),
                 subjectId: subjectId,
-                type: type,  
+                type: type,  // Will be 'note', 'file', or 'link' (without "s")
                 title: title
             };
             
+            // Add type-specific fields
             if (type === 'note') {
                 resData.content = content || '';
             }
@@ -1756,25 +1757,43 @@
                 resData.fileSize = fileSize || '';
             }
             
+            console.log('📤 Final resource data:', resData);
+            
             try {
+                // ⭐ STEP 1: Save to Firebase
                 if (firebaseReady) {
+                    console.log('🔥 Saving to Firebase...');
                     await db.ref('resources/' + resData.id).set(resData);
+                    console.log('✅ Saved to Firebase');
                 }
                 
+                // ⭐ STEP 2: Update local array
                 const existingIndex = resources.findIndex(r => r.id === resData.id);
                 if (existingIndex !== -1) {
                     resources[existingIndex] = resData;
+                    console.log('✅ Updated existing resource');
                 } else {
                     resources.push(resData);
+                    console.log('✅ Added new resource');
                 }
                 
+                console.log('📊 Total resources now:', resources.length);
+                
+                // ⭐ STEP 3: Re-render
                 saveToLocalStorage();
+                
+                // ⭐ STEP 4: Close modal
                 closeModal('resourceModal');
                 
+                // ⭐ STEP 5: FORCE re-render
+                console.log('🔄 Force re-rendering subject page...');
                 currentSubjectId = subjectId;
                 renderSubjectPage();
                 
+                // ⭐ STEP 6: Show success
                 toast(id ? '✅ Resource updated!' : '✅ Resource added!', 'success');
+                console.log('✅ ===== RESOURCE SAVED SUCCESSFULLY =====');
+                
             } catch (e) {
                 console.error('❌ Error saving resource:', e);
                 toast('❌ Error: ' + e.message, 'error');
@@ -1892,114 +1911,6 @@
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // QUICK CONTENT CRUD
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function openQuickContentModal(qaId) {
-            document.getElementById('quickContentId').value = qaId;
-            document.getElementById('quickContentText').value = quickContent[qaId] || '';
-            openModal('quickContentModal');
-        }
-        
-        async function saveQuickContent() {
-            const qaId = document.getElementById('quickContentId').value;
-            const text = document.getElementById('quickContentText').value.trim();
-            
-            try {
-                if (firebaseReady) {
-                    await db.ref('quickContent/' + qaId).set(text);
-                }
-                quickContent[qaId] = text;
-                saveToLocalStorage();
-                closeModal('quickContentModal');
-                renderQuickPage();
-                toast('✅ Content updated!', 'success');
-            } catch (e) {
-                toast('❌ Error: ' + e.message, 'error');
-            }
-        }
-        
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // QUICK SUBITEMS CRUD
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function openAddQuickSubItemModal(parentId) {
-            document.getElementById('qsiModalTitle').textContent = 'Add Link/Button';
-            document.getElementById('qsiEditId').value = '';
-            document.getElementById('qsiParentId').value = parentId;
-            document.getElementById('qsiTitleInput').value = '';
-            document.getElementById('qsiIconInput').value = '';
-            document.getElementById('qsiLinkInput').value = '';
-            openModal('quickSubItemModal');
-        }
-        
-        function openEditQuickSubItemModal(parentId, id) {
-            const list = quickSubItems[parentId] || [];
-            const sub = list.find(s => s.id === id);
-            if (!sub) return;
-            
-            document.getElementById('qsiModalTitle').textContent = 'Edit Link/Button';
-            document.getElementById('qsiEditId').value = id;
-            document.getElementById('qsiParentId').value = parentId;
-            document.getElementById('qsiTitleInput').value = sub.title;
-            document.getElementById('qsiIconInput').value = sub.icon || '';
-            document.getElementById('qsiLinkInput').value = sub.link || '';
-            openModal('quickSubItemModal');
-        }
-        
-        async function saveQuickSubItem() {
-            const id = document.getElementById('qsiEditId').value;
-            const parentId = document.getElementById('qsiParentId').value;
-            const title = document.getElementById('qsiTitleInput').value.trim();
-            const icon = document.getElementById('qsiIconInput').value.trim() || '🔗';
-            const link = document.getElementById('qsiLinkInput').value.trim();
-            
-            if (!title) { 
-                toast('⚠️ Please enter a title', 'error'); 
-                return; 
-            }
-            
-            const subData = { id: id || 'sub' + Date.now(), title, icon };
-            if (link) subData.link = link;
-            
-            try {
-                if (firebaseReady) {
-                    await db.ref('quickSubItems/' + parentId + '/' + subData.id).set(subData);
-                }
-                
-                if (!quickSubItems[parentId]) quickSubItems[parentId] = [];
-                if (id) {
-                    const idx = quickSubItems[parentId].findIndex(s => s.id === id);
-                    if (idx !== -1) quickSubItems[parentId][idx] = subData;
-                } else {
-                    quickSubItems[parentId].push(subData);
-                }
-                
-                saveToLocalStorage();
-                closeModal('quickSubItemModal');
-                renderQuickPage();
-                toast(id ? '✅ Updated!' : '✅ Added!', 'success');
-            } catch (e) {
-                toast('❌ Error: ' + e.message, 'error');
-            }
-        }
-        
-        async function deleteQuickSubItem(parentId, id) {
-            if (!confirm('🗑️ Delete this link/button?')) return;
-            
-            try {
-                if (firebaseReady) {
-                    await db.ref('quickSubItems/' + parentId + '/' + id).remove();
-                }
-                
-                if (quickSubItems[parentId]) {
-                    quickSubItems[parentId] = quickSubItems[parentId].filter(s => s.id !== id);
-                }
-                
-                saveToLocalStorage();
-                renderQuickPage();
-                toast('🗑️ Deleted!', 'success');
-            } catch (e) {
-                toast('❌ Error: ' + e.message, 'error');
-            }
-        }
-        
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // QUICK TABLE FEATURE
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2089,6 +2000,30 @@
             }
         }
         
+        async function setSheetMode(qaId, mode) {
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            item.sheetMode = mode;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickAccess/' + qaId + '/sheetMode').set(mode);
+                }
+                renderQuickPage();
+            } catch (e) {
+                toast('❌ Could not switch view', 'error');
+            }
+        }
+        
+        function loadEmbedSheet(sheetId, gid) {
+            const el = document.getElementById('quickTableDisplay');
+            if (!el) return;
+            const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/edit?usp=sharing&rm=minimal&widget=false&headers=false&gid=${gid || '0'}`;
+            el.innerHTML = `<div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
+                <iframe src="${embedUrl}" style="width:100%;height:70vh;border:none;display:block;" allowfullscreen></iframe>
+            </div>`;
+        }
+        
         async function loadLiveSheet(sheetId, gid) {
             const el = document.getElementById('quickTableDisplay');
             if (!el) return;
@@ -2142,13 +2077,15 @@
             const grid = document.getElementById('tableEditorGrid');
             const cols = editorState.headers.length;
             
+            // Header row
             const headCells = editorState.headers.map((h, ci) =>
                 `<td class="table-editor-cell table-editor-head"><input value="${h.replace(/"/g,'&quot;')}" placeholder="Header ${ci+1}" onchange="editorState.headers[${ci}]=this.value"></td>`
             ).join('');
             
+            // Data rows
             const bodyRows = editorState.rows.map((row, ri) => {
                 const cells = editorState.headers.map((_, ci) =>
-                    `<td class="table-editor-cell"><input value="${(row[ci]||'').replace(/"/g,'&quot;')}" placeholder="..." onchange="editorState.rows[ri][${ci}]=this.value"></td>`
+                    `<td class="table-editor-cell"><input value="${(row[ci]||'').replace(/"/g,'&quot;')}" placeholder="..." onchange="editorState.rows[${ri}][${ci}]=this.value"></td>`
                 ).join('');
                 return `<tr>${cells}</tr>`;
             }).join('');
@@ -2182,6 +2119,7 @@
         
         async function saveTableData() {
             const qaId = document.getElementById('tableEditorQaId').value;
+            // Sync any active input values before saving
             document.querySelectorAll('#tableEditorGrid input').forEach(inp => inp.dispatchEvent(new Event('change')));
             
             const tableToSave = JSON.parse(JSON.stringify(editorState));
@@ -2202,14 +2140,17 @@
         
         function getEmbedUrl(url) {
             if (!url) return null;
+            // Convert Google Drive share/view link to embed/preview link
             const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
             if (driveMatch) {
                 return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
             }
+            // Convert Google Drive open link
             const openMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
             if (openMatch) {
                 return `https://drive.google.com/file/d/${openMatch[1]}/preview`;
             }
+            // Fallback: try embedding directly (works for direct PDF links)
             return url;
         }
         
@@ -2220,7 +2161,7 @@
             
             if (isVisible) {
                 previewEl.style.display = 'none';
-                frameEl.innerHTML = ''; 
+                frameEl.innerHTML = ''; // unload iframe to stop background loading
             } else {
                 const embedUrl = getEmbedUrl(url);
                 if (!embedUrl) {
@@ -2229,6 +2170,7 @@
                 }
                 frameEl.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" style="border:none;display:block;" allowfullscreen></iframe>`;
                 previewEl.style.display = 'block';
+                // Scroll to preview
                 setTimeout(() => document.getElementById('card-' + itemId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
             }
         }
@@ -2236,7 +2178,7 @@
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // GOOGLE DRIVE BROWSER
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        let driveStack = []; 
+        let driveStack = []; // [{id, name}] breadcrumb stack
         let drivePreviewOpen = null;
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2329,134 +2271,247 @@
             }
             driveStack.pop();
             updateDriveBreadcrumb();
-            const parent = driveStack[driveStack.length - 1];
-            loadDriveFolder(parent.id);
-            pushNavState();
+            loadDriveFolder(driveStack[driveStack.length - 1].id);
+            history.back();
         }
         
         function updateDriveBreadcrumb() {
-            const crumbs = driveStack.map((item, idx) => {
-                if (idx === driveStack.length - 1) {
-                    return `<span class="text-teal-700 font-semibold">${item.name}</span>`;
-                }
-                return `<span class="cursor-pointer hover:underline" onclick="driveJumpTo(${idx})">${item.name}</span>`;
-            }).join(' <span class="mx-1 text-slate-300">/</span> ');
-            document.getElementById('driveBreadcrumb').innerHTML = crumbs;
-        }
-        
-        async function driveJumpTo(index) {
-            driveStack = driveStack.slice(0, index + 1);
-            updateDriveBreadcrumb();
-            await loadDriveFolder(driveStack[index].id);
-            pushNavState();
+            const el = document.getElementById('driveBreadcrumb');
+            if (!el) return;
+            el.textContent = driveStack.map(s => s.name).join(' › ');
+            document.getElementById('driveBackBtn').innerHTML = driveStack.length <= 1
+                ? '<i class="fas fa-home"></i> Home'
+                : '<i class="fas fa-arrow-left"></i> Back';
         }
         
         async function loadDriveFolder(folderId) {
-            const container = document.getElementById('drivePageContent');
-            container.innerHTML = `
-                <div class="text-center py-12 text-slate-400">
-                    <div style="width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
-                    <p class="text-xs font-medium">Loading Google Drive contents...</p>
-                </div>
-            `;
+            const content = document.getElementById('drivePageContent');
+            content.innerHTML = `<div class="text-center py-12 text-slate-400">
+                <div style="width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
+                <p class="text-sm">Loading files...</p>
+            </div>`;
             
             try {
-                const url = `${DRIVE_PROXY_URL}?folder=${folderId}`;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('API server returned ' + response.status);
-                const files = await response.json();
+                const url = `${DRIVE_PROXY_URL}?folderId=${folderId}`;
                 
-                if (!files || files.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <span class="icon">📭</span>
-                            This folder is empty
-                        </div>
-                    `;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                const files = data.files || [];
+                
+                if (files.length === 0) {
+                    content.innerHTML = `<div class="text-center py-12 text-slate-400">
+                        <div style="font-size:2rem;">📂</div>
+                        <p class="mt-2 text-sm">This folder is empty</p>
+                    </div>`;
                     return;
                 }
                 
-                // Sort: Folders first, then files alphabetically
-                files.sort((a, b) => {
-                    const aDir = a.mimeType === 'application/vnd.google-apps.folder' ? 0 : 1;
-                    const bDir = b.mimeType === 'application/vnd.google-apps.folder' ? 0 : 1;
-                    if (aDir !== bDir) return aDir - bDir;
-                    return a.name.localeCompare(b.name);
-                });
+                content.innerHTML = `<div class="space-y-2" id="driveFileList"></div>`;
+                const list = document.getElementById('driveFileList');
                 
-                let listHtml = '';
-                files.forEach(item => {
-                    const isFolder = item.mimeType === 'application/vnd.google-apps.folder';
-                    const icon = getFileIcon(item.mimeType);
-                    const size = isFolder ? '' : formatFileSize(item.size);
-                    const safeName = item.name.replace(/'/g, "\\'");
+                files.forEach(file => {
+                    const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
+                    const isPdf = file.mimeType === 'application/pdf';
+                    const icon = getFileIcon(file.mimeType);
+                    const size = formatFileSize(file.size);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden';
                     
                     if (isFolder) {
-                        listHtml += `
-                            <div onclick="driveOpenFolder('${item.id}', '${safeName}')" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-2xl">${icon}</span>
-                                    <div>
-                                        <div class="font-semibold text-slate-800 text-sm">${item.name}</div>
-                                        <div class="text-[10px] text-gray-400">Folder</div>
-                                    </div>
+                        card.innerHTML = `
+                            <button onclick="driveOpenFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')"
+                                class="w-full flex items-center gap-3 p-4 hover:bg-teal-50 transition text-left">
+                                <span class="text-2xl">📁</span>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-slate-800 truncate">${file.name}</div>
+                                    <div class="text-xs text-slate-400">Folder</div>
                                 </div>
-                                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-                            </div>
-                        `;
+                                <i class="fas fa-chevron-right text-slate-300"></i>
+                            </button>`;
                     } else {
-                        listHtml += `
-                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" id="card-${item.id}">
-                                <div class="p-4 flex items-center justify-between flex-wrap sm:flex-nowrap gap-3">
-                                    <div class="flex items-center gap-3 cursor-pointer" onclick="togglePreview('${item.id}', '${item.webViewLink}')">
-                                        <span class="text-2xl">${icon}</span>
-                                        <div>
-                                            <div class="font-semibold text-slate-800 text-sm hover:text-teal-600 hover:underline">${item.name}</div>
-                                            <div class="text-[10px] text-gray-400">${size ? size + ' · ' : ''}File</div>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-2 items-center ml-auto">
-                                        <button onclick="togglePreview('${item.id}', '${item.webViewLink}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition">
-                                            <i class="fas fa-eye"></i> Preview
-                                        </button>
-                                        <a href="${item.webContentLink || item.webViewLink}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">
-                                            <i class="fas fa-external-link-alt"></i> Open
-                                        </a>
-                                    </div>
+                        const previewId = 'dp-' + file.id;
+                        const downloadUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+                        const embedUrl = `https://drive.google.com/file/d/${file.id}/preview`;
+                        
+                        card.id = 'dcard-' + file.id;
+                        card.innerHTML = `
+                            <div class="flex items-center gap-3 p-4">
+                                <span class="text-2xl flex-shrink-0">${icon}</span>
+                                <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleDrivePreview('${file.id}', '${embedUrl}')">
+                                    <div class="font-semibold text-slate-800 text-sm truncate hover:text-teal-600 hover:underline">${file.name}</div>
+                                    <div class="text-xs text-slate-400">${size}</div>
                                 </div>
-                                <div id="preview-${item.id}" style="display:none;">
-                                    <div class="border-t border-gray-100 bg-gray-50 px-4 py-2 flex justify-between items-center">
-                                        <span class="text-[10px] text-slate-500 font-semibold">📖 Preview</span>
-                                        <button onclick="togglePreview('${item.id}', '${item.webViewLink}')" class="text-xs text-slate-400 hover:text-slate-600">✕ Close</button>
-                                    </div>
-                                    <div id="preview-frame-${item.id}" class="w-full" style="height:70vh;"></div>
+                                <div class="flex gap-2 flex-shrink-0">
+                                    <button onclick="toggleDrivePreview('${file.id}', '${embedUrl}')"
+                                        class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
+                                        <i class="fas fa-eye"></i> Preview
+                                    </button>
+                                    <a href="${downloadUrl}" target="_blank"
+                                        class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition">
+                                        <i class="fas fa-download"></i>
+                                    </a>
                                 </div>
                             </div>
-                        `;
+                            <div id="${previewId}" style="display:none;">
+                                <div class="border-t border-gray-100 bg-gray-50 px-4 py-2 flex justify-between items-center">
+                                    <span class="text-xs text-slate-500 font-medium">📖 Preview</span>
+                                    <button onclick="toggleDrivePreview('${file.id}', '')" class="text-xs text-slate-400 hover:text-slate-600">✕ Close</button>
+                                </div>
+                                <div id="${previewId}-frame" style="height:75vh;"></div>
+                            </div>`;
                     }
+                    list.appendChild(card);
                 });
                 
-                container.innerHTML = `<div class="grid grid-cols-1 gap-3">${listHtml}</div>`;
-                
             } catch (e) {
-                container.innerHTML = `
-                    <div class="text-center py-12 text-slate-400">
-                        <span class="text-4xl">⚠️</span>
-                        <p class="mt-2 text-sm text-slate-500">Error loading files</p>
-                        <p class="text-xs text-slate-400 mt-1">${e.message}</p>
-                        <button onclick="loadDriveFolder('${folderId}')" class="mt-4 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-xs font-semibold">Retry</button>
-                    </div>
-                `;
+                content.innerHTML = `<div class="text-center py-12">
+                    <div style="font-size:2rem;">⚠️</div>
+                    <p class="text-slate-600 mt-2 text-sm font-medium">Could not load files</p>
+                    <p class="text-slate-400 text-xs mt-1">${e.message}</p>
+                    <p class="text-slate-400 text-xs mt-1">Make sure the folder is shared as "Anyone with link can view"</p>
+                </div>`;
             }
         }
         
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            menu.classList.toggle('hidden');
+        function toggleDrivePreview(fileId, embedUrl) {
+            const previewEl = document.getElementById('dp-' + fileId);
+            const frameEl = document.getElementById('dp-' + fileId + '-frame');
+            const isVisible = previewEl.style.display !== 'none';
+            
+            if (isVisible) {
+                previewEl.style.display = 'none';
+                frameEl.innerHTML = '';
+            } else {
+                frameEl.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" style="border:none;display:block;" allowfullscreen></iframe>`;
+                previewEl.style.display = 'block';
+                setTimeout(() => document.getElementById('dcard-' + fileId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            }
         }
         
-        // Launch App
-        window.onload = init;
+        function openQuickContentModal(id) {
+            document.getElementById('quickContentId').value = id;
+            document.getElementById('quickContentText').value = quickContent[id] || '';
+            openModal('quickContentModal');
+        }
+        
+        async function saveQuickContent() {
+            const id = document.getElementById('quickContentId').value;
+            const content = document.getElementById('quickContentText').value;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickContent/' + id).set(content);
+                }
+                
+                quickContent[id] = content;
+                saveToLocalStorage();
+                closeModal('quickContentModal');
+                renderQuickPage();
+                toast('✅ Content saved!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // QUICK SUB-ITEM CRUD
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openAddQuickSubItemModal(parentId) {
+            document.getElementById('qsiModalTitle').textContent = 'Add Link/Button';
+            document.getElementById('qsiEditId').value = '';
+            document.getElementById('qsiParentId').value = parentId;
+            document.getElementById('qsiTitleInput').value = '';
+            document.getElementById('qsiIconInput').value = '';
+            document.getElementById('qsiLinkInput').value = '';
+            openModal('quickSubItemModal');
+        }
+        
+        function openEditQuickSubItemModal(parentId, subId) {
+            const items = quickSubItems[parentId] || [];
+            const item = items.find(s => s.id === subId);
+            if (!item) return;
+            
+            document.getElementById('qsiModalTitle').textContent = 'Edit Link/Button';
+            document.getElementById('qsiEditId').value = subId;
+            document.getElementById('qsiParentId').value = parentId;
+            document.getElementById('qsiTitleInput').value = item.title;
+            document.getElementById('qsiIconInput').value = item.icon || '';
+            document.getElementById('qsiLinkInput').value = item.link || '';
+            openModal('quickSubItemModal');
+        }
+        
+        async function saveQuickSubItem() {
+            const id = document.getElementById('qsiEditId').value;
+            const parentId = document.getElementById('qsiParentId').value;
+            const title = document.getElementById('qsiTitleInput').value.trim();
+            const icon = document.getElementById('qsiIconInput').value.trim() || '🔗';
+            const link = document.getElementById('qsiLinkInput').value.trim();
+            
+            if (!title || !parentId) { 
+                toast('⚠️ Please fill in required fields', 'error'); 
+                return; 
+            }
+            
+            const subData = { id: id || 'sub' + Date.now(), title, icon, link };
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickSubItems/' + parentId + '/' + subData.id).set(subData);
+                }
+                
+                if (!quickSubItems[parentId]) quickSubItems[parentId] = [];
+                
+                if (id) {
+                    const idx = quickSubItems[parentId].findIndex(s => s.id === id);
+                    if (idx !== -1) quickSubItems[parentId][idx] = subData;
+                } else {
+                    quickSubItems[parentId].push(subData);
+                }
+                
+                saveToLocalStorage();
+                closeModal('quickSubItemModal');
+                renderQuickPage();
+                toast(id ? '✅ Updated!' : '✅ Added!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        async function deleteQuickSubItem(parentId, subId) {
+            if (!confirm('🗑️ Delete this item?')) return;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickSubItems/' + parentId + '/' + subId).remove();
+                }
+                
+                if (quickSubItems[parentId]) {
+                    quickSubItems[parentId] = quickSubItems[parentId].filter(s => s.id !== subId);
+                }
+                
+                saveToLocalStorage();
+                renderQuickPage();
+                toast('🗑️ Deleted!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // MOBILE MENU
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // START APP
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+        });
     </script>
 </body>
 </html>
