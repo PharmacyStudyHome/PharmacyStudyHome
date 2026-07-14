@@ -531,6 +531,20 @@
         </div>
     </div>
 
+    <!-- GOOGLE SHEET LINK MODAL -->
+    <div id="sheetLinkModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 class="text-xl font-bold text-slate-800 mb-1"><i class="fab fa-google text-teal-600"></i> Link Google Sheet</h3>
+            <p class="text-xs text-slate-500 mb-4">Paste the share link of a Google Sheet. It must be shared as "Anyone with the link can view". The table below will update automatically whenever the sheet changes.</p>
+            <input type="hidden" id="sheetLinkQaId">
+            <input id="sheetLinkInput" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full p-3 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <div class="flex gap-3">
+                <button onclick="saveSheetLink()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
+                <button onclick="closeModal('sheetLinkModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     </div> <!-- end #appContent -->
 
     <!-- ═══════════════ FIREBASE + APP SCRIPT ═══════════════ -->
@@ -618,6 +632,7 @@
         let currentTab = 'note';  // ⭐ FIXED: Changed from 'notes' to 'note'
         let pageStack = [];
         let toastTimer = null;
+        let liveSheetInterval = null;
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // INITIALIZATION
@@ -760,13 +775,17 @@
             const qaGrid = document.getElementById('quickAccessGrid');
             qaGrid.innerHTML = '';
             
-            quickAccess.forEach(item => {
+            quickAccess.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            
+            quickAccess.forEach((item, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-4 text-center transition card-hover relative group';
                 btn.innerHTML = `
                     <div class="text-3xl mb-1">${item.icon || '📌'}</div>
                     <div class="text-sm font-semibold text-slate-700">${item.title}</div>
                     <div class="admin-controls absolute top-1 right-1 gap-1">
+                        <button onclick="event.stopPropagation();moveQuickAccess('${item.id}','up')" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
+                        <button onclick="event.stopPropagation();moveQuickAccess('${item.id}','down')" ${idx === quickAccess.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
                         <button onclick="event.stopPropagation();openEditQuickAccessModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
                         <button onclick="event.stopPropagation();deleteQuickAccess('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
                     </div>
@@ -820,17 +839,20 @@
             grid.innerHTML = '';
             
             const subList = subjects[currentProfId] || [];
+            subList.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
             
             if (subList.length === 0) {
                 grid.innerHTML = `<div class="col-span-full empty-state"><span class="icon">📭</span>No subjects yet.</div>`;
             } else {
-                subList.forEach(sub => {
+                subList.forEach((sub, idx) => {
                     const btn = document.createElement('button');
                     btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-5 text-center transition card-hover relative';
                     btn.innerHTML = `
                         <div class="text-3xl mb-1">${sub.icon || '📖'}</div>
                         <div class="font-semibold text-slate-800">${sub.title}</div>
                         <div class="admin-controls absolute top-1 right-1 gap-1">
+                            <button onclick="event.stopPropagation();moveSubject('${sub.id}','${currentProfId}','up')" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
+                            <button onclick="event.stopPropagation();moveSubject('${sub.id}','${currentProfId}','down')" ${idx === subList.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
                             <button onclick="event.stopPropagation();openEditSubjectModal('${sub.id}','${currentProfId}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
                             <button onclick="event.stopPropagation();deleteSubject('${sub.id}','${currentProfId}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
                         </div>
@@ -929,10 +951,10 @@
                         return `
                             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" id="card-${item.id}">
                                 <div class="p-5 flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-3 cursor-pointer" onclick="togglePreview('${item.id}', '${item.url || ''}')">
                                         <div class="text-3xl">📄</div>
                                         <div>
-                                            <h4 class="font-semibold text-slate-800">${item.title}</h4>
+                                            <h4 class="font-semibold text-slate-800 hover:text-teal-600 hover:underline">${item.title}</h4>
                                             <span class="text-xs text-gray-500">${item.fileType || 'PDF'} · ${item.fileSize || 'N/A'}</span>
                                         </div>
                                     </div>
@@ -1031,8 +1053,13 @@
                 <div class="mb-6">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-semibold text-slate-800">📊 Table</h3>
-                        ${isAdmin ? `<button onclick="openTableEditorModal('${qaId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition">✏️ Edit Table</button>` : ''}
+                        <div class="flex gap-2">
+                            ${isAdmin ? `<button onclick="openSheetLinkModal('${qaId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition"><i class="fab fa-google"></i> ${item.sheetId ? 'Change' : 'Link'} Sheet</button>` : ''}
+                            ${isAdmin && item.sheetId ? `<button onclick="unlinkSheet('${qaId}')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-xl text-sm font-semibold transition">Unlink</button>` : ''}
+                            ${isAdmin && !item.sheetId ? `<button onclick="openTableEditorModal('${qaId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition">✏️ Edit Table</button>` : ''}
+                        </div>
                     </div>
+                    ${item.sheetId ? `<div class="text-xs text-slate-400 mb-2"><i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically</div>` : ''}
                     <div id="quickTableDisplay"></div>
                 </div>
                 
@@ -1041,7 +1068,14 @@
             `;
             
             const list = document.getElementById('quickSubItemsList');
-            renderQuickTable(qaId);
+            
+            if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
+            if (item.sheetId) {
+                loadLiveSheet(item.sheetId, item.sheetGid);
+                liveSheetInterval = setInterval(() => loadLiveSheet(item.sheetId, item.sheetGid), 20000);
+            } else {
+                renderQuickTable(qaId);
+            }
             
             if (subItems.length === 0) {
                 list.innerHTML = `<div class="empty-state"><span class="icon">🔗</span>No links added yet</div>`;
@@ -1123,6 +1157,7 @@
         });
         
         function showPage(page) {
+            if (page !== 'quick' && liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
             document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById('page-' + page);
             if (target) {
@@ -1896,6 +1931,101 @@
         
         let editorState = { headers: [], rows: [] };
         
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // LIVE GOOGLE SHEET (realtime table)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openSheetLinkModal(qaId) {
+            document.getElementById('sheetLinkQaId').value = qaId;
+            const item = quickAccess.find(q => q.id === qaId);
+            document.getElementById('sheetLinkInput').value = '';
+            openModal('sheetLinkModal');
+        }
+        
+        async function saveSheetLink() {
+            const qaId = document.getElementById('sheetLinkQaId').value;
+            const url = document.getElementById('sheetLinkInput').value.trim();
+            
+            const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!idMatch) {
+                toast('⚠️ Could not find a Sheet ID in that link', 'error');
+                return;
+            }
+            const sheetId = idMatch[1];
+            const gidMatch = url.match(/[#&]gid=([0-9]+)/);
+            const sheetGid = gidMatch ? gidMatch[1] : '0';
+            
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            item.sheetId = sheetId;
+            item.sheetGid = sheetGid;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickAccess/' + qaId).update({ sheetId, sheetGid });
+                }
+                closeModal('sheetLinkModal');
+                toast('✅ Sheet linked!', 'success');
+                renderQuickPage();
+            } catch (e) {
+                toast('❌ Could not save sheet link', 'error');
+            }
+        }
+        
+        async function unlinkSheet(qaId) {
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            delete item.sheetId;
+            delete item.sheetGid;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickAccess/' + qaId + '/sheetId').remove();
+                    await db.ref('quickAccess/' + qaId + '/sheetGid').remove();
+                }
+                if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
+                renderQuickPage();
+            } catch (e) {
+                toast('❌ Could not unlink sheet', 'error');
+            }
+        }
+        
+        async function loadLiveSheet(sheetId, gid) {
+            const el = document.getElementById('quickTableDisplay');
+            if (!el) return;
+            
+            try {
+                const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&gid=${gid || '0'}`;
+                const res = await fetch(gvizUrl);
+                if (!res.ok) throw new Error('Sheet error: ' + res.status);
+                const text = await res.text();
+                const json = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
+                
+                const cols = json.table.cols.map(c => c.label || c.id || '');
+                const rows = json.table.rows || [];
+                
+                const headerRow = cols.map(h => `<th style="background:#0d9488;color:white;padding:10px 12px;text-align:left;font-weight:600;">${h}</th>`).join('');
+                const bodyRows = rows.map((row, i) => {
+                    const bg = i % 2 === 1 ? 'background:#f8fafc;' : '';
+                    const cells = (row.c || []).map(c => {
+                        const val = c ? (c.f !== undefined && c.f !== null ? c.f : (c.v !== undefined && c.v !== null ? c.v : '')) : '';
+                        return `<td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;color:#334155;vertical-align:top;${bg}">${val}</td>`;
+                    }).join('');
+                    return `<tr>${cells}</tr>`;
+                }).join('');
+                
+                el.innerHTML = `<div style="overflow-x:auto;border-radius:12px;border:1px solid #e2e8f0;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                        <thead><tr>${headerRow}</tr></thead>
+                        <tbody>${bodyRows}</tbody>
+                    </table>
+                </div>`;
+            } catch (e) {
+                el.innerHTML = `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
+                    ⚠️ Could not load Google Sheet.<br>Make sure it's shared as "Anyone with the link can view".
+                </div>`;
+            }
+        }
+        
         function openTableEditorModal(qaId) {
             document.getElementById('tableEditorQaId').value = qaId;
             const saved = quickTables[qaId];
@@ -2016,6 +2146,54 @@
         let driveStack = []; // [{id, name}] breadcrumb stack
         let drivePreviewOpen = null;
         
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // REORDERING (admin)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        async function moveQuickAccess(id, direction) {
+            const list = quickAccess;
+            const idx = list.findIndex(q => q.id === id);
+            if (idx === -1) return;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= list.length) return;
+            
+            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+            list.forEach((item, i) => item.order = i);
+            
+            try {
+                if (firebaseReady) {
+                    const updates = {};
+                    list.forEach(item => { updates['quickAccess/' + item.id + '/order'] = item.order; });
+                    await db.ref().update(updates);
+                }
+                renderHome();
+            } catch (e) {
+                toast('❌ Could not save new order', 'error');
+            }
+        }
+        
+        async function moveSubject(id, profId, direction) {
+            const list = subjects[profId];
+            if (!list) return;
+            const idx = list.findIndex(s => s.id === id);
+            if (idx === -1) return;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= list.length) return;
+            
+            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+            list.forEach((item, i) => item.order = i);
+            
+            try {
+                if (firebaseReady) {
+                    const updates = {};
+                    list.forEach(item => { updates['subjects/' + profId + '/' + item.id + '/order'] = item.order; });
+                    await db.ref().update(updates);
+                }
+                renderProfPage();
+            } catch (e) {
+                toast('❌ Could not save new order', 'error');
+            }
+        }
+        
         function getFileIcon(mimeType) {
             if (mimeType === 'application/vnd.google-apps.folder') return '📁';
             if (mimeType === 'application/pdf') return '📄';
@@ -2126,15 +2304,15 @@
                         card.innerHTML = `
                             <div class="flex items-center gap-3 p-4">
                                 <span class="text-2xl flex-shrink-0">${icon}</span>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-semibold text-slate-800 text-sm truncate">${file.name}</div>
+                                <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleDrivePreview('${file.id}', '${embedUrl}')">
+                                    <div class="font-semibold text-slate-800 text-sm truncate hover:text-teal-600 hover:underline">${file.name}</div>
                                     <div class="text-xs text-slate-400">${size}</div>
                                 </div>
                                 <div class="flex gap-2 flex-shrink-0">
-                                    ${isPdf ? `<button onclick="toggleDrivePreview('${file.id}', '${embedUrl}')"
+                                    <button onclick="toggleDrivePreview('${file.id}', '${embedUrl}')"
                                         class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
                                         <i class="fas fa-eye"></i> Preview
-                                    </button>` : ''}
+                                    </button>
                                     <a href="${downloadUrl}" target="_blank"
                                         class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition">
                                         <i class="fas fa-download"></i>
