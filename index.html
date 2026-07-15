@@ -159,7 +159,7 @@
                 <h3 id="quickCategoryDetailTitle" class="text-xl font-bold text-slate-800 mb-4">Category</h3>
                 <div id="quickCategoryDetailContent"></div>
             </div>
-            <!-- Main content (categories grid, table, links) -->
+            <!-- Main content -->
             <div id="quickMainContent"></div>
         </div>
         
@@ -236,10 +236,8 @@
 
     <div id="sheetLinkModal" class="modal-overlay"><div class="modal-box"><h3 class="text-xl font-bold text-slate-800 mb-1"><i class="fab fa-google text-teal-600"></i> Link Google Sheet</h3><p class="text-xs text-slate-500 mb-4">Paste the share link of a Google Sheet. It must be shared as "Anyone with the link can view". The table below will update automatically whenever the sheet changes.</p><input type="hidden" id="sheetLinkQaId"><input id="sheetLinkInput" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full p-3 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-teal-500"><div class="flex gap-3"><button onclick="saveSheetLink()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button><button onclick="closeModal('sheetLinkModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button></div></div></div>
 
-    <!-- GLOBAL CATEGORY MODAL -->
     <div id="globalCategoryModal" class="modal-overlay"><div class="modal-box"><h3 id="globalCategoryModalTitle" class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-pills text-teal-600"></i> Add Drug Category</h3><input type="hidden" id="globalCategoryEditId"><input id="globalCatTitle" type="text" placeholder="Category Name" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500"><input id="globalCatIcon" type="text" placeholder="Icon Emoji" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500"><input id="globalCatSheetId" type="text" placeholder="Google Sheet Link or ID" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500"><p class="text-xs text-slate-400 mb-4">Paste the Google Sheet link or just the Sheet ID.</p><div class="flex gap-3"><button onclick="saveGlobalCategory()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button><button onclick="closeModal('globalCategoryModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button></div></div></div>
 
-    <!-- QUICK CATEGORY MODAL -->
     <div id="quickCategoryModal" class="modal-overlay"><div class="modal-box"><h3 id="quickCategoryModalTitle" class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-pills text-teal-600"></i> Add Category to this Quick Access</h3><input type="hidden" id="quickCategoryEditId"><input type="hidden" id="quickCategoryParentId"><input id="quickCatTitle" type="text" placeholder="Category Name" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500"><input id="quickCatIcon" type="text" placeholder="Icon Emoji" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500"><input id="quickCatSheetId" type="text" placeholder="Google Sheet Link or ID" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500"><p class="text-xs text-slate-400 mb-4">Paste the Google Sheet link or just the Sheet ID.</p><div class="flex gap-3"><button onclick="saveQuickCategory()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button><button onclick="closeModal('quickCategoryModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button></div></div></div>
 
     </div> <!-- end #appContent -->
@@ -290,13 +288,13 @@
             ]
         };
         const DEFAULT_RESOURCES = [];
-       const DEFAULT_QUICK_ACCESS = [
-    { id: 'qa-drive', title: 'Drive Files', icon: '📁', isSpecial: true },
-    { id: 'qa-drug-index', title: 'Drug Index', icon: '💊', isSpecial: true },
-    { id: 'qa1', title: 'Notes', icon: '📝' },
-    { id: 'qa2', title: 'Calculator', icon: '🧮' },
-    { id: 'qa3', title: 'Guidelines', icon: '📋' }
-]; 
+        const DEFAULT_QUICK_ACCESS = [
+            { id: 'qa-drive', title: 'Drive Files', icon: '📁' },
+            { id: 'qa-drug-index', title: 'Drug Index', icon: '💊' },
+            { id: 'qa-notes', title: 'Notes', icon: '📝' },
+            { id: 'qa-calculator', title: 'Calculator', icon: '🧮' },
+            { id: 'qa-guidelines', title: 'Guidelines', icon: '📋' }
+        ];
         const DEFAULT_WELCOME = { title: 'Welcome to Pharmacy Study Home! 🎓', text: 'Your complete resource for pharmacy education.' };
         
         let profs = [], subjects = {}, resources = [], quickAccess = [], quickContent = {}, quickSubItems = {}, quickTables = {}, welcomeContent = {};
@@ -410,7 +408,7 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // PER-QUICK-ACCESS CATEGORIES (stored in quickAccess item)
+        // PER-QUICK-ACCESS CATEGORIES
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function getQuickCategories(qaId) {
             const item = quickAccess.find(q => q.id === qaId);
@@ -478,14 +476,13 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // RENDER QUICK PAGE (with per-item categories and fast API detail)
+        // RENDER QUICK PAGE
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function renderQuickPage() {
             const qaId = pageStack[pageStack.length - 1] || '';
             const item = quickAccess.find(q => q.id === qaId);
             if (!item) { goHome(); return; }
             
-            // Hide detail container
             document.getElementById('quickCategoryDetailContainer').style.display = 'none';
             document.getElementById('quickMainContent').style.display = 'block';
             
@@ -520,7 +517,6 @@
                     <div id="quickTableDisplay"></div>
                 </div>
 
-                <!-- ⭐ CATEGORIES SECTION -->
                 <div class="mb-6">
                     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
                         <h3 class="font-semibold text-slate-800">🏷️ Categories</h3>
@@ -537,7 +533,6 @@
                 <div id="quickSubItemsList" class="space-y-2"></div>
             `;
             
-            // Render categories grid
             const grid = document.getElementById('quickCategoryGrid');
             grid.innerHTML = '';
             if (categories.length === 0) {
@@ -560,7 +555,6 @@
                 });
             }
             
-            // Render sub-items and table
             const list = document.getElementById('quickSubItemsList');
             if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
             if (item.sheetId) {
@@ -609,7 +603,6 @@
             const cat = categories.find(c => c.id === catId);
             if (!cat) return;
 
-            // Hide main content, show detail container
             document.getElementById('quickMainContent').style.display = 'none';
             const detailContainer = document.getElementById('quickCategoryDetailContainer');
             detailContainer.style.display = 'block';
@@ -622,7 +615,6 @@
                 return;
             }
 
-            // Show loading spinner
             contentDiv.innerHTML = `
                 <div class="text-center py-8 text-slate-400">
                     <div style="width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
@@ -630,7 +622,6 @@
                 </div>
             `;
 
-            // Fetch data via Worker (same as Styled Data)
             const sheetId = cat.sheetId;
             const workerUrl = `${DRIVE_PROXY_URL}?type=sheet-data&sheetId=${sheetId}&sheetName=Sheet1`;
 
@@ -719,7 +710,15 @@
             if (data.profs) { const fb = Object.values(data.profs); if (fb.length) profs = fb; }
             if (data.subjects) { subjects = data.subjects; Object.keys(subjects).forEach(k => { if (!Array.isArray(subjects[k])) subjects[k] = Object.values(subjects[k]); }); }
             if (data.resources) { const fb = Object.values(data.resources); if (fb.length) resources = fb; }
-            if (data.quickAccess) { const fb = Object.values(data.quickAccess); if (fb.length) quickAccess = fb; }
+            if (data.quickAccess) { 
+                const fb = Object.values(data.quickAccess); 
+                if (fb.length) {
+                    // Preserve categories if they exist
+                    const existingIds = quickAccess.map(q => q.id);
+                    quickAccess = fb;
+                    // If categories were stored, they're already in the data
+                }
+            }
             if (data.quickContent) quickContent = data.quickContent;
             if (data.quickSubItems) { quickSubItems = {}; Object.keys(data.quickSubItems).forEach(k => { quickSubItems[k] = Object.values(data.quickSubItems[k]); }); }
             if (data.quickTables) quickTables = data.quickTables;
@@ -744,13 +743,16 @@
             });
             db.ref('quickAccess').on('value', (snap) => {
                 const data = snap.val() || {};
-                quickAccess = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                const newQuickAccess = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                // Preserve categories from the data (they are stored inside each item)
+                quickAccess = newQuickAccess;
                 if (currentPage === 'quick') renderQuickPage();
+                else if (currentPage === 'home') renderHome();
             });
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // EXISTING RENDER FUNCTIONS (unchanged)
+        // RENDER HOME (ALL ITEMS EDITABLE)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function renderAll() {
             updateAdminUI();
@@ -761,207 +763,89 @@
         }
         
         function renderHome() {
-    document.getElementById('welcomeTitle').textContent = welcomeContent.title || 'Welcome!';
-    document.getElementById('welcomeText').textContent = welcomeContent.text || '';
-    
-    const qaGrid = document.getElementById('quickAccessGrid');
-    qaGrid.innerHTML = '';
-    
-    // Sort quickAccess items by order
-    quickAccess.sort((a, b) => (a.order || 0) - (b.order || 0));
-    
-    // ⭐ ALL Quick Access items are now editable - including Drive Files and Drug Index
-    quickAccess.forEach((item, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-4 text-center transition card-hover relative group';
-        
-        // Check if this is a special item (Drive Files or Drug Index)
-        const isSpecial = item.id === 'qa-drive' || item.id === 'qa-drug-index';
-        
-        btn.innerHTML = `
-            <div class="text-3xl mb-1">${item.icon || '📌'}</div>
-            <div class="text-sm font-semibold text-slate-700">${item.title}</div>
-            <div class="admin-controls absolute top-1 right-1 gap-1">
-                <button onclick="event.stopPropagation();moveQuickAccess('${item.id}','up')" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
-                <button onclick="event.stopPropagation();moveQuickAccess('${item.id}','down')" ${idx === quickAccess.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
-                <button onclick="event.stopPropagation();openEditQuickAccessModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
-                <button onclick="event.stopPropagation();deleteQuickAccess('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
-            </div>
-        `;
-        
-        // ⭐ Set onclick based on item type
-        if (item.id === 'qa-drive') {
-            // Drive Files - opens Drive folder
-            btn.onclick = () => navigateToDrive(GDRIVE_ROOT_FOLDER, 'Drive Files');
-        } else if (item.id === 'qa-drug-index') {
-            // Drug Index - opens Drug Index page
-            btn.onclick = () => showDrugIndex();
-        } else {
-            // Regular Quick Access - opens its own page
-            btn.onclick = () => navigateToQuick(item.id);
-        }
-        
-        qaGrid.appendChild(btn);
-    });
-    
-    // ⭐ Remove the hardcoded Drive Files and Drug Index buttons (they're now in quickAccess)
-    // The "Add Quick Access" button stays (Admin only)
-    if (isAdmin) {
-        const addBtn = document.createElement('button');
-        addBtn.className = 'bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl font-semibold transition text-sm flex items-center gap-2';
-        addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Quick Access';
-        addBtn.onclick = openAddQuickAccessModal;
-        qaGrid.parentElement.appendChild(addBtn);
-    }
-    
-    const profGrid = document.getElementById('profGrid');
-    profGrid.innerHTML = '';
-    
-    profs.forEach(prof => {
-        const btn = document.createElement('button');
-        btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-6 text-center transition card-hover relative';
-        btn.innerHTML = `
-            <div class="text-4xl mb-2">${prof.icon || '📚'}</div>
-            <div class="font-bold text-slate-800">${prof.title}</div>
-            <div class="admin-controls absolute top-1 right-1 gap-1">
-                <button onclick="event.stopPropagation();openEditProfModal('${prof.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
-                <button onclick="event.stopPropagation();deleteProf('${prof.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
-            </div>
-        `;
-        btn.onclick = () => navigateToProf(prof.id);
-        profGrid.appendChild(btn);
-    });
-}
-        
-        function renderProfPage() {
-            const prof = profs.find(p => p.id === currentProfId);
-            document.getElementById('profPageTitle').textContent = `${prof?.icon || '📚'} ${prof?.title || 'Prof'}`;
-            const grid = document.getElementById('profSubjectsGrid');
-            grid.innerHTML = '';
-            const subList = subjects[currentProfId] || [];
-            subList.sort((a, b) => (a.order || 0) - (b.order || 0));
-            if (subList.length === 0) {
-                grid.innerHTML = `<div class="col-span-full empty-state"><span class="icon">📭</span>No subjects yet.</div>`;
-            } else {
-                subList.forEach((sub, idx) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-5 text-center transition card-hover relative';
-                    btn.innerHTML = `
-                        <div class="text-3xl mb-1">${sub.icon || '📖'}</div>
-                        <div class="font-semibold text-slate-800">${sub.title}</div>
-                        <div class="admin-controls absolute top-1 right-1 gap-1">
-                            <button onclick="event.stopPropagation();moveSubject('${sub.id}','${currentProfId}','up')" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
-                            <button onclick="event.stopPropagation();moveSubject('${sub.id}','${currentProfId}','down')" ${idx === subList.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
-                            <button onclick="event.stopPropagation();openEditSubjectModal('${sub.id}','${currentProfId}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
-                            <button onclick="event.stopPropagation();deleteSubject('${sub.id}','${currentProfId}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
-                        </div>
-                    `;
-                    btn.onclick = () => navigateToSubject(sub.id);
-                    grid.appendChild(btn);
-                });
-            }
-            const driveSectionEl = document.getElementById('profDriveSection');
-            if (prof && prof.driveFolder) {
-                driveSectionEl.style.display = 'block';
-                document.getElementById('profDriveBtn').onclick = () => {
-                    driveStack = [{ id: prof.driveFolder, name: prof.title + ' Files' }];
-                    showPage('drive'); updateDriveBreadcrumb(); loadDriveFolder(prof.driveFolder); pushNavState();
-                };
-            } else { driveSectionEl.style.display = 'none'; }
-            showPage('prof');
-        }
-        
-        function renderSubjectPage() {
-            let subjectName = 'Subject', subjectIcon = '📖', subjectObj = null;
-            for (const pid in subjects) { const found = subjects[pid].find(s => s.id === currentSubjectId); if (found) { subjectName = found.title; subjectIcon = found.icon || '📖'; subjectObj = found; break; } }
-            document.getElementById('subjectPageTitle').textContent = `${subjectIcon} ${subjectName}`;
-            const subjectDriveSectionEl = document.getElementById('subjectDriveSection');
-            if (subjectObj && subjectObj.driveFolder) {
-                subjectDriveSectionEl.style.display = 'block';
-                document.getElementById('subjectDriveBtn').onclick = () => {
-                    driveStack = [{ id: subjectObj.driveFolder, name: subjectObj.title + ' Files' }];
-                    showPage('drive'); updateDriveBreadcrumb(); loadDriveFolder(subjectObj.driveFolder); pushNavState();
-                };
-            } else { subjectDriveSectionEl.style.display = 'none'; }
-            const container = document.getElementById('subjectContent');
-            const filtered = resources.filter(r => { if (!r.subjectId || !r.type) return false; return String(r.subjectId).trim() === String(currentSubjectId).trim() && String(r.type).trim() === String(currentTab).trim(); });
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="empty-state"><span class="icon">📭</span>No ${currentTab}s found. Admin can add resources.</div>`;
-            } else {
-                container.innerHTML = filtered.map(item => {
-                    if (item.type === 'note') {
-                        return `<div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 relative"><h4 class="font-bold text-slate-800 mb-2">${item.title}</h4><p class="text-slate-600 text-sm whitespace-pre-line">${item.content || ''}</p><div class="admin-controls absolute top-2 right-2 gap-1"><button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button><button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button></div></div>`;
-                    } else if (item.type === 'file') {
-                        return `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" id="card-${item.id}"><div class="p-5 flex items-center justify-between"><div class="flex items-center gap-3 cursor-pointer" onclick="togglePreview('${item.id}', '${item.url || ''}')"><div class="text-3xl">📄</div><div><h4 class="font-semibold text-slate-800 hover:text-teal-600 hover:underline">${item.title}</h4><span class="text-xs text-gray-500">${item.fileType || 'PDF'} · ${item.fileSize || 'N/A'}</span></div></div><div class="flex gap-2 items-center flex-wrap justify-end"><button onclick="togglePreview('${item.id}', '${item.url || ''}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-eye"></i> Preview</button><a href="${item.url || '#'}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-download"></i> Download</a><div class="admin-controls gap-1"><button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button><button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button></div></div></div><div id="preview-${item.id}" style="display:none;"><div class="border-t border-gray-100 bg-gray-50 px-4 py-2 flex justify-between items-center"><span class="text-xs text-slate-500 font-medium">📖 Preview</span><button onclick="togglePreview('${item.id}', '${item.url || ''}')" class="text-xs text-slate-400 hover:text-slate-600">✕ Close</button></div><div id="preview-frame-${item.id}" class="w-full" style="height:75vh;"></div></div></div>`;
-                    } else if (item.type === 'link') {
-                        return `<div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center justify-between relative"><div class="flex items-center gap-3"><div class="text-3xl">🔗</div><div><h4 class="font-semibold text-slate-800">${item.title}</h4><span class="text-xs text-gray-500">${item.url || ''}</span></div></div><div class="flex gap-2 items-center"><a href="${item.url || '#'}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-external-link-alt"></i> Open</a><div class="admin-controls gap-1"><button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button><button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button></div></div></div>`;
-                    }
-                    return '';
-                }).join('');
-            }
-            showPage('subject');
-        }
-        
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // LOAD LIVE / EMBED SHEET (unchanged)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        async function loadLiveSheet(sheetId, gid) {
-            const el = document.getElementById('quickTableDisplay');
-            if (!el) return;
-            el.innerHTML = `<div class="text-center py-8 text-slate-400"><div style="width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div><p class="text-sm">Loading sheet...</p></div>`;
-            try {
-                const workerUrl = `${DRIVE_PROXY_URL}?type=sheet-data&sheetId=${sheetId}&sheetName=Sheet1`;
-                const response = await fetch(workerUrl);
-                if (!response.ok) throw new Error(`Worker error: ${response.status}`);
-                const result = await response.json();
-                if (result.error) throw new Error(result.error);
-                if (result.success && result.data) {
-                    const tableHtml = parseSheetDataToHtml(result.data);
-                    el.innerHTML = `<div style="border-radius:12px;border:1px solid #e2e8f0;overflow:auto;max-height:650px;background:white;">${tableHtml}</div><div class="text-xs text-slate-400 mt-2 text-center"><i class="fas fa-sync-alt"></i> Auto-updates from Google Sheets</div>`;
-                } else { throw new Error('Invalid response from Worker'); }
-            } catch (e) {
-                el.innerHTML = `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">⚠️ Could not load styled sheet.<br><span class="text-xs">${e.message}</span><br><br><button onclick="loadEmbedSheet('${sheetId}','${gid || '0'}')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-eye"></i> Switch to Full Formatting</button><button onclick="loadLiveSheet('${sheetId}','${gid || '0'}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-sync-alt"></i> Retry</button></div>`;
-            }
-        }
-        
-        function loadEmbedSheet(sheetId, gid) {
-            const el = document.getElementById('quickTableDisplay');
-            if (!el) return;
-            const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal&widget=false&headers=false&chrome=false&gid=${gid || '0'}`;
-            el.innerHTML = `<div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;background:white;width:100%;"><iframe src="${embedUrl}" style="width:100%;height:600px;border:none;display:block;" allowfullscreen loading="lazy"></iframe></div><div class="text-xs text-slate-400 mt-2 text-center"><i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically</div>`;
-        }
-        
-        function parseSheetDataToHtml(data) {
-            if (!data || !data.values || data.values.length === 0) return '<div class="text-center py-8 text-slate-400">No data found in sheet</div>';
-            const rows = data.values;
-            let html = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
-            rows.forEach((row, rowIndex) => {
-                html += '<tr>';
-                const isHeader = rowIndex === 0 || rowIndex === 1;
-                const maxCols = Math.max(...rows.map(r => r.length));
-                for (let colIndex = 0; colIndex < maxCols; colIndex++) {
-                    let cell = row[colIndex] || '';
-                    let style = 'padding:10px 12px;border:1px solid #e2e8f0;';
-                    let displayText = cell;
-                    if (colIndex === 0 && rowIndex > 1) style += 'font-weight:bold;';
-                    if (isHeader) style += 'font-weight:bold;background:#0d9488;color:white;';
-                    else if (rowIndex % 2 === 1) style += 'background:#f8fafc;';
-                    if (typeof cell === 'string') {
-                        if (cell.startsWith('**') && cell.endsWith('**')) { style += 'font-weight:bold;'; displayText = cell.slice(2, -2); }
-                        else if (cell.startsWith('*') && cell.endsWith('*')) { style += 'font-weight:bold;'; displayText = cell.slice(1, -1); }
-                    }
-                    const tag = isHeader ? 'th' : 'td';
-                    html += `<${tag} style="${style}">${displayText}</${tag}>`;
+            document.getElementById('welcomeTitle').textContent = welcomeContent.title || 'Welcome!';
+            document.getElementById('welcomeText').textContent = welcomeContent.text || '';
+            
+            const qaGrid = document.getElementById('quickAccessGrid');
+            qaGrid.innerHTML = '';
+            
+            quickAccess.sort((a, b) => (a.order || 0) - (b.order || 0));
+            
+            quickAccess.forEach((item, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-4 text-center transition card-hover relative group';
+                
+                btn.innerHTML = `
+                    <div class="text-3xl mb-1">${item.icon || '📌'}</div>
+                    <div class="text-sm font-semibold text-slate-700">${item.title}</div>
+                    <div class="admin-controls absolute top-1 right-1 gap-1">
+                        <button onclick="event.stopPropagation();moveQuickAccess('${item.id}','up')" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
+                        <button onclick="event.stopPropagation();moveQuickAccess('${item.id}','down')" ${idx === quickAccess.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
+                        <button onclick="event.stopPropagation();openEditQuickAccessModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
+                        <button onclick="event.stopPropagation();deleteQuickAccess('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
+                    </div>
+                `;
+                
+                // ⭐ Set onclick based on item ID
+                if (item.id === 'qa-drive') {
+                    btn.onclick = () => navigateToDrive(GDRIVE_ROOT_FOLDER, 'Drive Files');
+                } else if (item.id === 'qa-drug-index') {
+                    btn.onclick = () => showDrugIndex();
+                } else {
+                    btn.onclick = () => navigateToQuick(item.id);
                 }
-                html += '</tr>';
+                
+                qaGrid.appendChild(btn);
             });
-            html += '</table>';
-            return html;
+            
+            if (isAdmin) {
+                const addBtn = document.createElement('button');
+                addBtn.className = 'bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl font-semibold transition text-sm flex items-center gap-2';
+                addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Quick Access';
+                addBtn.onclick = openAddQuickAccessModal;
+                qaGrid.parentElement.appendChild(addBtn);
+            }
+            
+            const profGrid = document.getElementById('profGrid');
+            profGrid.innerHTML = '';
+            
+            profs.forEach(prof => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-6 text-center transition card-hover relative';
+                btn.innerHTML = `
+                    <div class="text-4xl mb-2">${prof.icon || '📚'}</div>
+                    <div class="font-bold text-slate-800">${prof.title}</div>
+                    <div class="admin-controls absolute top-1 right-1 gap-1">
+                        <button onclick="event.stopPropagation();openEditProfModal('${prof.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
+                        <button onclick="event.stopPropagation();deleteProf('${prof.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
+                    </div>
+                `;
+                btn.onclick = () => navigateToProf(prof.id);
+                profGrid.appendChild(btn);
+            });
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // NAVIGATION
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function navigateToQuick(qaId) {
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) { goHome(); return; }
+            
+            // ⭐ Handle special items
+            if (item.id === 'qa-drive') {
+                navigateToDrive(GDRIVE_ROOT_FOLDER, 'Drive Files');
+                return;
+            } else if (item.id === 'qa-drug-index') {
+                showDrugIndex();
+                return;
+            }
+            
+            pageStack.push(qaId);
+            renderQuickPage();
+            pushNavState();
+        }
+        
         function pushNavState() { history.pushState({ page: currentPage, profId: currentProfId, subjectId: currentSubjectId, stack: [...pageStack] }, ''); }
         window.addEventListener('popstate', (e) => {
             if (e.state) { currentPage = e.state.page; currentProfId = e.state.profId || null; currentSubjectId = e.state.subjectId || null; pageStack = e.state.stack || []; if (currentPage === 'home') { renderHome(); showPage('home'); } else if (currentPage === 'prof') renderProfPage(); else if (currentPage === 'subject') renderSubjectPage(); else if (currentPage === 'quick') renderQuickPage(); else if (currentPage === 'drive') { showPage('drive'); if (driveStack.length > 0) { updateDriveBreadcrumb(); loadDriveFolder(driveStack[driveStack.length - 1].id); } } else if (currentPage === 'drug-index') showDrugIndex(); else { renderHome(); showPage('home'); } } else { currentPage = 'home'; currentProfId = null; currentSubjectId = null; pageStack = []; renderHome(); showPage('home'); } });
@@ -969,24 +853,6 @@
         function goHome() { pageStack = []; currentProfId = null; currentSubjectId = null; showPage('home'); renderHome(); pushNavState(); }
         function navigateToProf(profId) { currentProfId = profId; pageStack.push('prof'); renderProfPage(); pushNavState(); }
         function navigateToSubject(subjectId) { currentSubjectId = subjectId; pageStack.push('subject'); renderSubjectPage(); pushNavState(); }
-        function navigateToQuick(qaId) {
-    const item = quickAccess.find(q => q.id === qaId);
-    if (!item) { goHome(); return; }
-    
-    // ⭐ Check if it's a special item
-    if (item.id === 'qa-drive') {
-        navigateToDrive(GDRIVE_ROOT_FOLDER, 'Drive Files');
-        return;
-    } else if (item.id === 'qa-drug-index') {
-        showDrugIndex();
-        return;
-    }
-    
-    // Regular Quick Access
-    pageStack.push(qaId);
-    renderQuickPage();
-    pushNavState();
-}
         function goBackFromSubject() { history.back(); }
         
         function switchTab(tab) { currentTab = tab; document.querySelectorAll('[id^="tab-"]').forEach(el => { el.classList.remove('border-teal-600', 'text-teal-600'); el.classList.add('border-transparent', 'text-gray-500'); }); const tabEl = document.getElementById('tab-' + tab); if (tabEl) { tabEl.classList.add('border-teal-600', 'text-teal-600'); tabEl.classList.remove('border-transparent', 'text-gray-500'); } if (currentPage === 'subject') renderSubjectPage(); }
@@ -1017,21 +883,162 @@
         async function saveWelcomeBanner() { const title = document.getElementById('welcomeTitleInput').value.trim(); const text = document.getElementById('welcomeTextInput').value.trim(); if (!title || !text) { toast('⚠️ Please fill in all fields', 'error'); return; } try { if (firebaseReady) { await db.ref('welcomeContent').set({ title, text }); } welcomeContent = { title, text }; saveToLocalStorage(); closeModal('welcomeModal'); renderHome(); toast('✅ Banner updated!', 'success'); } catch (e) { toast('❌ Error: ' + e.message, 'error'); } }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // PROF / SUBJECT / RESOURCE CRUD (unchanged - not repeated for brevity)
+        // PROF / SUBJECT / RESOURCE CRUD (essential functions)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // (All these functions exist in the original; I'll include essential ones)
-        function openAddProfModal() { /* ... */ }
-        function openEditProfModal(id) { /* ... */ }
-        async function saveProf() { /* ... */ }
-        async function deleteProf(id) { /* ... */ }
-        function openAddSubjectModal() { /* ... */ }
-        function openEditSubjectModal(id, profId) { /* ... */ }
-        async function saveSubject() { /* ... */ }
-        async function deleteSubject(id, profId) { /* ... */ }
-        function openAddResourceModal() { /* ... */ }
-        function openEditResourceModal(id) { /* ... */ }
-        async function saveResource() { /* ... */ }
-        async function deleteResource(id) { /* ... */ }
+        function openAddProfModal() {
+            if (!isAdmin) { toast('❌ Admin mode required', 'error'); return; }
+            document.getElementById('profModalTitle').textContent = 'Add Prof Year';
+            document.getElementById('profEditId').value = '';
+            document.getElementById('profNameInput').value = '';
+            document.getElementById('profIconInput').value = '';
+            document.getElementById('profDriveFolderInput').value = '';
+            openModal('profModal');
+        }
+        function openEditProfModal(id) {
+            if (!isAdmin) { toast('❌ Admin mode required', 'error'); return; }
+            const prof = profs.find(p => p.id === id);
+            if (!prof) return;
+            document.getElementById('profModalTitle').textContent = 'Edit Prof Year';
+            document.getElementById('profEditId').value = id;
+            document.getElementById('profNameInput').value = prof.title;
+            document.getElementById('profIconInput').value = prof.icon || '';
+            document.getElementById('profDriveFolderInput').value = prof.driveFolder || '';
+            openModal('profModal');
+        }
+        async function saveProf() {
+            const id = document.getElementById('profEditId').value;
+            const title = document.getElementById('profNameInput').value.trim();
+            const icon = document.getElementById('profIconInput').value.trim() || '📚';
+            const driveFolder = document.getElementById('profDriveFolderInput').value.trim();
+            if (!title) { toast('⚠️ Please enter a title', 'error'); return; }
+            const profData = { id: id || 'p' + Date.now(), title, icon };
+            if (driveFolder) profData.driveFolder = driveFolder;
+            try {
+                if (firebaseReady) { await db.ref('profs/' + profData.id).set(profData); if (!id) { await db.ref('subjects/' + profData.id).set({}); } }
+                if (id) { const idx = profs.findIndex(p => p.id === id); if (idx !== -1) profs[idx] = profData; } else { profs.push(profData); subjects[profData.id] = []; }
+                saveToLocalStorage(); closeModal('profModal'); renderHome(); toast(id ? '✅ Prof updated!' : '✅ Prof added!', 'success');
+            } catch (e) { toast('❌ Error: ' + e.message, 'error'); }
+        }
+        async function deleteProf(id) {
+            if (!confirm('🗑️ Delete this Prof and all its subjects/resources?')) return;
+            try {
+                if (firebaseReady) { await db.ref('profs/' + id).remove(); await db.ref('subjects/' + id).remove(); }
+                profs = profs.filter(p => p.id !== id); delete subjects[id];
+                resources = resources.filter(r => { for (const pid in subjects) { if (subjects[pid].find(s => s.id === r.subjectId)) return true; } return false; });
+                saveToLocalStorage(); renderHome(); toast('🗑️ Deleted!', 'success');
+            } catch (e) { toast('❌ Error: ' + e.message, 'error'); }
+        }
+        
+        function openAddSubjectModal() {
+            if (!isAdmin) { toast('❌ Admin mode required', 'error'); return; }
+            document.getElementById('subjectModalTitle').textContent = 'Add Subject';
+            document.getElementById('subjectEditId').value = '';
+            document.getElementById('subjectProfId').value = currentProfId || '';
+            document.getElementById('subjectNameInput').value = '';
+            document.getElementById('subjectIconInput').value = '';
+            document.getElementById('subjectDriveFolderInput').value = '';
+            openModal('subjectModal');
+        }
+        function openEditSubjectModal(id, profId) {
+            if (!isAdmin) { toast('❌ Admin mode required', 'error'); return; }
+            const sub = subjects[profId]?.find(s => s.id === id);
+            if (!sub) return;
+            document.getElementById('subjectModalTitle').textContent = 'Edit Subject';
+            document.getElementById('subjectEditId').value = id;
+            document.getElementById('subjectProfId').value = profId;
+            document.getElementById('subjectNameInput').value = sub.title;
+            document.getElementById('subjectIconInput').value = sub.icon || '';
+            document.getElementById('subjectDriveFolderInput').value = sub.driveFolder || '';
+            openModal('subjectModal');
+        }
+        async function saveSubject() {
+            const id = document.getElementById('subjectEditId').value;
+            const profId = document.getElementById('subjectProfId').value;
+            const title = document.getElementById('subjectNameInput').value.trim();
+            const icon = document.getElementById('subjectIconInput').value.trim() || '📖';
+            const driveFolder = document.getElementById('subjectDriveFolderInput').value.trim();
+            if (!title || !profId) { toast('⚠️ Please fill in all fields', 'error'); return; }
+            const subData = { id: id || 's' + Date.now(), title, icon };
+            if (driveFolder) subData.driveFolder = driveFolder;
+            try {
+                if (firebaseReady) { await db.ref('subjects/' + profId + '/' + subData.id).set(subData); }
+                if (id) { const idx = subjects[profId]?.findIndex(s => s.id === id); if (idx !== -1 && idx !== undefined) subjects[profId][idx] = subData; } else { if (!subjects[profId]) subjects[profId] = []; subjects[profId].push(subData); }
+                saveToLocalStorage(); closeModal('subjectModal');
+                if (currentProfId === profId) renderProfPage(); else renderHome();
+                toast(id ? '✅ Subject updated!' : '✅ Subject added!', 'success');
+            } catch (e) { toast('❌ Error: ' + e.message, 'error'); }
+        }
+        async function deleteSubject(id, profId) {
+            if (!confirm('🗑️ Delete this subject and all its resources?')) return;
+            try {
+                if (firebaseReady) { await db.ref('subjects/' + profId + '/' + id).remove(); }
+                if (subjects[profId]) { subjects[profId] = subjects[profId].filter(s => s.id !== id); }
+                resources = resources.filter(r => r.subjectId !== id);
+                saveToLocalStorage();
+                if (currentProfId === profId) renderProfPage(); else renderHome();
+                toast('🗑️ Deleted!', 'success');
+            } catch (e) { toast('❌ Error: ' + e.message, 'error'); }
+        }
+        
+        function openAddResourceModal() {
+            if (!isAdmin) { toast('❌ Admin mode required', 'error'); return; }
+            document.getElementById('resourceModalTitle').textContent = 'Add Resource';
+            document.getElementById('resourceEditId').value = '';
+            document.getElementById('resourceSubjectId').value = currentSubjectId || '';
+            document.getElementById('resourceTitle').value = '';
+            document.getElementById('resourceContent').value = '';
+            document.getElementById('resourceUrl').value = '';
+            document.getElementById('resourceFileType').value = '';
+            document.getElementById('resourceFileSize').value = '';
+            document.getElementById('resourceType').value = 'note';
+            openModal('resourceModal');
+        }
+        function openEditResourceModal(id) {
+            if (!isAdmin) { toast('❌ Admin mode required', 'error'); return; }
+            const res = resources.find(r => r.id === id);
+            if (!res) { toast('❌ Resource not found', 'error'); return; }
+            document.getElementById('resourceModalTitle').textContent = 'Edit Resource';
+            document.getElementById('resourceEditId').value = id;
+            document.getElementById('resourceSubjectId').value = res.subjectId || '';
+            document.getElementById('resourceTitle').value = res.title || '';
+            document.getElementById('resourceContent').value = res.content || '';
+            document.getElementById('resourceUrl').value = res.url || '';
+            document.getElementById('resourceFileType').value = res.fileType || '';
+            document.getElementById('resourceFileSize').value = res.fileSize || '';
+            document.getElementById('resourceType').value = res.type || 'note';
+            openModal('resourceModal');
+        }
+        async function saveResource() {
+            const id = document.getElementById('resourceEditId').value;
+            const subjectId = document.getElementById('resourceSubjectId').value;
+            const type = document.getElementById('resourceType').value;
+            const title = document.getElementById('resourceTitle').value.trim();
+            const content = document.getElementById('resourceContent').value.trim();
+            const url = document.getElementById('resourceUrl').value.trim();
+            const fileType = document.getElementById('resourceFileType').value.trim();
+            const fileSize = document.getElementById('resourceFileSize').value.trim();
+            if (!title) { toast('⚠️ Please enter a title', 'error'); return; }
+            if (!subjectId) { toast('⚠️ Subject ID missing', 'error'); return; }
+            const resData = { id: id || 'r_' + Date.now(), subjectId, type, title };
+            if (type === 'note') resData.content = content || '';
+            if (type === 'link') resData.url = url || '';
+            if (type === 'file') { resData.url = url || ''; resData.fileType = fileType || ''; resData.fileSize = fileSize || ''; }
+            try {
+                if (firebaseReady) { await db.ref('resources/' + resData.id).set(resData); }
+                const existingIndex = resources.findIndex(r => r.id === resData.id);
+                if (existingIndex !== -1) { resources[existingIndex] = resData; } else { resources.push(resData); }
+                saveToLocalStorage(); closeModal('resourceModal'); currentSubjectId = subjectId; renderSubjectPage(); toast(id ? '✅ Resource updated!' : '✅ Resource added!', 'success');
+            } catch (e) { console.error('❌ Error saving resource:', e); toast('❌ Error: ' + e.message, 'error'); }
+        }
+        async function deleteResource(id) {
+            if (!confirm('🗑️ Delete this resource?')) return;
+            try {
+                if (firebaseReady) { await db.ref('resources/' + id).remove(); }
+                resources = resources.filter(r => r.id !== id); saveToLocalStorage();
+                if (currentPage === 'subject') renderSubjectPage();
+                toast('🗑️ Deleted!', 'success');
+            } catch (e) { toast('❌ Error: ' + e.message, 'error'); }
+        }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // QUICK ACCESS CRUD (with sheetId)
@@ -1047,21 +1054,17 @@
             openModal('quickAccessModal');
         }
         function openEditQuickAccessModal(id) {
-    if (!isAdmin) {
-        toast('❌ Admin mode required', 'error');
-        return;
-    }
-    const item = quickAccess.find(q => q.id === id);
-    if (!item) return;
-    
-    document.getElementById('qaModalTitle').textContent = 'Edit Quick Access';
-    document.getElementById('qaEditId').value = id;
-    document.getElementById('qaTitleInput').value = item.title;
-    document.getElementById('qaIconInput').value = item.icon || '';
-    document.getElementById('qaSheetIdInput').value = item.sheetId || '';
-    document.getElementById('qaDriveFolderInput').value = item.driveFolder || '';
-    openModal('quickAccessModal');
-}
+            if (!isAdmin) { toast('❌ Admin mode required', 'error'); return; }
+            const item = quickAccess.find(q => q.id === id);
+            if (!item) return;
+            document.getElementById('qaModalTitle').textContent = 'Edit Quick Access';
+            document.getElementById('qaEditId').value = id;
+            document.getElementById('qaTitleInput').value = item.title;
+            document.getElementById('qaIconInput').value = item.icon || '';
+            document.getElementById('qaSheetIdInput').value = item.sheetId || '';
+            document.getElementById('qaDriveFolderInput').value = item.driveFolder || '';
+            openModal('quickAccessModal');
+        }
         async function saveQuickAccess() {
             const id = document.getElementById('qaEditId').value;
             const title = document.getElementById('qaTitleInput').value.trim();
@@ -1087,39 +1090,347 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // QUICK TABLE, SHEET LINK, DRIVE BROWSER (unchanged - placeholders)
+        // QUICK CONTENT CRUD
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function renderQuickTable(qaId) { /* unchanged */ }
-        function openSheetLinkModal(qaId) { /* unchanged */ }
-        async function saveSheetLink() { /* unchanged */ }
-        async function unlinkSheet(qaId) { /* unchanged */ }
-        async function setSheetMode(qaId, mode) { /* unchanged */ }
-        function openTableEditorModal(qaId) { /* unchanged */ }
-        function renderEditorGrid() { /* unchanged */ }
-        function addTableColumn() { /* unchanged */ }
-        function removeTableColumn() { /* unchanged */ }
-        function addTableRow() { /* unchanged */ }
-        function removeTableRow() { /* unchanged */ }
-        async function saveTableData() { /* unchanged */ }
-        function getEmbedUrl(url) { /* unchanged */ }
-        function togglePreview(itemId, url) { /* unchanged */ }
+        function openQuickContentModal(id) {
+            document.getElementById('quickContentId').value = id;
+            document.getElementById('quickContentText').value = quickContent[id] || '';
+            openModal('quickContentModal');
+        }
+        async function saveQuickContent() {
+            const id = document.getElementById('quickContentId').value;
+            const content = document.getElementById('quickContentText').value;
+            try {
+                if (firebaseReady) { await db.ref('quickContent/' + id).set(content); }
+                quickContent[id] = content; saveToLocalStorage(); closeModal('quickContentModal'); renderQuickPage(); toast('✅ Content saved!', 'success');
+            } catch (e) { toast('❌ Error: ' + e.message, 'error'); }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // QUICK SUB-ITEM CRUD
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openAddQuickSubItemModal(parentId) {
+            document.getElementById('qsiModalTitle').textContent = 'Add Link/Button';
+            document.getElementById('qsiEditId').value = '';
+            document.getElementById('qsiParentId').value = parentId;
+            document.getElementById('qsiTitleInput').value = '';
+            document.getElementById('qsiIconInput').value = '';
+            document.getElementById('qsiLinkInput').value = '';
+            openModal('quickSubItemModal');
+        }
+        function openEditQuickSubItemModal(parentId, subId) {
+            const items = quickSubItems[parentId] || [];
+            const item = items.find(s => s.id === subId);
+            if (!item) return;
+            document.getElementById('qsiModalTitle').textContent = 'Edit Link/Button';
+            document.getElementById('qsiEditId').value = subId;
+            document.getElementById('qsiParentId').value = parentId;
+            document.getElementById('qsiTitleInput').value = item.title;
+            document.getElementById('qsiIconInput').value = item.icon || '';
+            document.getElementById('qsiLinkInput').value = item.link || '';
+            openModal('quickSubItemModal');
+        }
+        async function saveQuickSubItem() {
+            const id = document.getElementById('qsiEditId').value;
+            const parentId = document.getElementById('qsiParentId').value;
+            const title = document.getElementById('qsiTitleInput').value.trim();
+            const icon = document.getElementById('qsiIconInput').value.trim() || '🔗';
+            const link = document.getElementById('qsiLinkInput').value.trim();
+            if (!title || !parentId) { toast('⚠️ Please fill in required fields', 'error'); return; }
+            const subData = { id: id || 'sub' + Date.now(), title, icon, link };
+            try {
+                if (firebaseReady) { await db.ref('quickSubItems/' + parentId + '/' + subData.id).set(subData); }
+                if (!quickSubItems[parentId]) quickSubItems[parentId] = [];
+                if (id) { const idx = quickSubItems[parentId].findIndex(s => s.id === id); if (idx !== -1) quickSubItems[parentId][idx] = subData; } else { quickSubItems[parentId].push(subData); }
+                saveToLocalStorage(); closeModal('quickSubItemModal'); renderQuickPage(); toast(id ? '✅ Updated!' : '✅ Added!', 'success');
+            } catch (e) { toast('❌ Error: ' + e.message, 'error'); }
+        }
+        async function deleteQuickSubItem(parentId, subId) {
+            if (!confirm('🗑️ Delete this item?')) return;
+            try {
+                if (firebaseReady) { await db.ref('quickSubItems/' + parentId + '/' + subId).remove(); }
+                if (quickSubItems[parentId]) { quickSubItems[parentId] = quickSubItems[parentId].filter(s => s.id !== subId); }
+                saveToLocalStorage(); renderQuickPage(); toast('🗑️ Deleted!', 'success');
+            } catch (e) { toast('❌ Error: ' + e.message, 'error'); }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // QUICK TABLE, SHEET LINK, DRIVE BROWSER
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function renderQuickTable(qaId) {
+            const el = document.getElementById('quickTableDisplay');
+            if (!el) return;
+            const table = quickTables[qaId];
+            if (!table || !table.headers || table.headers.length === 0) {
+                el.innerHTML = isAdmin ? `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">No table yet — tap ✏️ Edit Table above to create one</div>` : `<div class="text-center text-slate-400 py-4 text-sm">No table added yet</div>`;
+                return;
+            }
+            const headerRow = table.headers.map(h => `<th class="quick-table-th" style="background:#0d9488;color:white;padding:10px 12px;text-align:left;font-weight:600;">${h}</th>`).join('');
+            const bodyRows = (table.rows || []).map((row, i) => {
+                const bg = i % 2 === 1 ? 'background:#f8fafc;' : '';
+                const cells = table.headers.map((_, ci) => `<td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;color:#334155;vertical-align:top;${bg}">${row[ci] || ''}</td>`).join('');
+                return `<tr>${cells}</tr>`;
+            }).join('');
+            el.innerHTML = `<div style="overflow-x:auto;border-radius:12px;border:1px solid #e2e8f0;"><table style="width:100%;border-collapse:collapse;font-size:0.85rem;"><thead><tr>${headerRow}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
+        }
+        
+        let editorState = { headers: [], rows: [] };
+        function openSheetLinkModal(qaId) {
+            document.getElementById('sheetLinkQaId').value = qaId;
+            document.getElementById('sheetLinkInput').value = '';
+            openModal('sheetLinkModal');
+        }
+        async function saveSheetLink() {
+            const qaId = document.getElementById('sheetLinkQaId').value;
+            const url = document.getElementById('sheetLinkInput').value.trim();
+            const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!idMatch) { toast('⚠️ Could not find a Sheet ID in that link', 'error'); return; }
+            const sheetId = idMatch[1];
+            const gidMatch = url.match(/[#&]gid=([0-9]+)/);
+            const sheetGid = gidMatch ? gidMatch[1] : '0';
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            item.sheetId = sheetId;
+            item.sheetGid = sheetGid;
+            try {
+                if (firebaseReady) { await db.ref('quickAccess/' + qaId).update({ sheetId, sheetGid }); }
+                closeModal('sheetLinkModal'); toast('✅ Sheet linked!', 'success'); renderQuickPage();
+            } catch (e) { toast('❌ Could not save sheet link', 'error'); }
+        }
+        async function unlinkSheet(qaId) {
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            delete item.sheetId;
+            delete item.sheetGid;
+            try {
+                if (firebaseReady) { await db.ref('quickAccess/' + qaId + '/sheetId').remove(); await db.ref('quickAccess/' + qaId + '/sheetGid').remove(); }
+                if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
+                renderQuickPage();
+            } catch (e) { toast('❌ Could not unlink sheet', 'error'); }
+        }
+        async function setSheetMode(qaId, mode) {
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            item.sheetMode = mode;
+            try {
+                if (firebaseReady) { await db.ref('quickAccess/' + qaId + '/sheetMode').set(mode); }
+                renderQuickPage();
+            } catch (e) { toast('❌ Could not switch view', 'error'); }
+        }
+        function openTableEditorModal(qaId) {
+            document.getElementById('tableEditorQaId').value = qaId;
+            const saved = quickTables[qaId];
+            if (saved && saved.headers && saved.headers.length > 0) {
+                editorState = JSON.parse(JSON.stringify(saved));
+            } else {
+                editorState = { headers: ['Column 1', 'Column 2'], rows: [['', '']] };
+            }
+            renderEditorGrid();
+            openModal('tableEditorModal');
+        }
+        function renderEditorGrid() {
+            const grid = document.getElementById('tableEditorGrid');
+            const headCells = editorState.headers.map((h, ci) => `<td class="table-editor-cell table-editor-head"><input value="${h.replace(/"/g,'&quot;')}" placeholder="Header ${ci+1}" onchange="editorState.headers[${ci}]=this.value"></td>`).join('');
+            const bodyRows = editorState.rows.map((row, ri) => {
+                const cells = editorState.headers.map((_, ci) => `<td class="table-editor-cell"><input value="${(row[ci]||'').replace(/"/g,'&quot;')}" placeholder="..." onchange="editorState.rows[${ri}][${ci}]=this.value"></td>`).join('');
+                return `<tr>${cells}</tr>`;
+            }).join('');
+            grid.innerHTML = `<thead><tr>${headCells}</tr></thead><tbody>${bodyRows}</tbody>`;
+        }
+        function addTableColumn() {
+            editorState.headers.push('Column ' + (editorState.headers.length + 1));
+            editorState.rows.forEach(r => r.push(''));
+            renderEditorGrid();
+        }
+        function removeTableColumn() {
+            if (editorState.headers.length <= 1) { toast('⚠️ Need at least 1 column', 'error'); return; }
+            editorState.headers.pop();
+            editorState.rows.forEach(r => r.pop());
+            renderEditorGrid();
+        }
+        function addTableRow() {
+            editorState.rows.push(editorState.headers.map(() => ''));
+            renderEditorGrid();
+        }
+        function removeTableRow() {
+            if (editorState.rows.length <= 1) { toast('⚠️ Need at least 1 row', 'error'); return; }
+            editorState.rows.pop();
+            renderEditorGrid();
+        }
+        async function saveTableData() {
+            const qaId = document.getElementById('tableEditorQaId').value;
+            document.querySelectorAll('#tableEditorGrid input').forEach(inp => inp.dispatchEvent(new Event('change')));
+            const tableToSave = JSON.parse(JSON.stringify(editorState));
+            try {
+                if (firebaseReady) { await db.ref('quickTables/' + qaId).set(tableToSave); }
+                quickTables[qaId] = tableToSave;
+                saveToLocalStorage(); closeModal('tableEditorModal'); renderQuickPage(); toast('✅ Table saved!', 'success');
+            } catch (e) { toast('❌ Error: ' + e.message, 'error'); }
+        }
+        function getEmbedUrl(url) {
+            if (!url) return null;
+            const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+            const openMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+            if (openMatch) return `https://drive.google.com/file/d/${openMatch[1]}/preview`;
+            return url;
+        }
+        function togglePreview(itemId, url) {
+            const previewEl = document.getElementById('preview-' + itemId);
+            const frameEl = document.getElementById('preview-frame-' + itemId);
+            const isVisible = previewEl.style.display !== 'none';
+            if (isVisible) {
+                previewEl.style.display = 'none';
+                frameEl.innerHTML = '';
+            } else {
+                const embedUrl = getEmbedUrl(url);
+                if (!embedUrl) { toast('❌ No URL provided for this resource', 'error'); return; }
+                frameEl.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" style="border:none;display:block;" allowfullscreen></iframe>`;
+                previewEl.style.display = 'block';
+                setTimeout(() => document.getElementById('card-' + itemId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // DRIVE BROWSER
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         let driveStack = [];
-        function getFileIcon(mimeType) { /* unchanged */ }
-        function formatFileSize(bytes) { /* unchanged */ }
+        function getFileIcon(mimeType) {
+            if (mimeType === 'application/vnd.google-apps.folder') return '📁';
+            if (mimeType === 'application/pdf') return '📄';
+            if (mimeType.includes('image')) return '🖼️';
+            if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
+            if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
+            if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return '📑';
+            if (mimeType.includes('video')) return '🎬';
+            if (mimeType.includes('audio')) return '🎵';
+            if (mimeType.includes('zip') || mimeType.includes('rar')) return '🗜️';
+            return '📎';
+        }
+        function formatFileSize(bytes) {
+            if (!bytes) return '';
+            const kb = bytes / 1024;
+            if (kb < 1024) return Math.round(kb) + ' KB';
+            return (kb / 1024).toFixed(1) + ' MB';
+        }
         async function navigateToDrive(folderId, folderName) {
-    driveStack = [{ id: folderId, name: folderName }];
-    showPage('drive');
-    updateDriveBreadcrumb();
-    await loadDriveFolder(folderId);
-    pushNavState();
-}
-        async function driveOpenFolder(folderId, folderName) { /* unchanged */ }
-        function driveGoBack() { /* unchanged */ }
-        function updateDriveBreadcrumb() { /* unchanged */ }
-        async function loadDriveFolder(folderId) { /* unchanged */ }
-        function toggleDrivePreview(fileId, embedUrl) { /* unchanged */ }
-        async function moveQuickAccess(id, direction) { /* unchanged */ }
-        async function moveSubject(id, profId, direction) { /* unchanged */ }
+            driveStack = [{ id: folderId, name: folderName }];
+            showPage('drive');
+            updateDriveBreadcrumb();
+            await loadDriveFolder(folderId);
+            pushNavState();
+        }
+        async function driveOpenFolder(folderId, folderName) {
+            driveStack.push({ id: folderId, name: folderName });
+            updateDriveBreadcrumb();
+            await loadDriveFolder(folderId);
+            pushNavState();
+        }
+        function driveGoBack() {
+            if (driveStack.length <= 1) { goHome(); return; }
+            driveStack.pop();
+            updateDriveBreadcrumb();
+            loadDriveFolder(driveStack[driveStack.length - 1].id);
+            history.back();
+        }
+        function updateDriveBreadcrumb() {
+            const el = document.getElementById('driveBreadcrumb');
+            if (!el) return;
+            el.textContent = driveStack.map(s => s.name).join(' › ');
+            document.getElementById('driveBackBtn').innerHTML = driveStack.length <= 1 ? '<i class="fas fa-home"></i> Home' : '<i class="fas fa-arrow-left"></i> Back';
+        }
+        async function loadDriveFolder(folderId) {
+            const content = document.getElementById('drivePageContent');
+            content.innerHTML = `<div class="text-center py-12 text-slate-400"><div style="width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div><p class="text-sm">Loading files...</p></div>`;
+            try {
+                const url = `${DRIVE_PROXY_URL}?type=drive&folderId=${folderId}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                const files = data.files || [];
+                if (files.length === 0) {
+                    content.innerHTML = `<div class="text-center py-12 text-slate-400"><div style="font-size:2rem;">📂</div><p class="mt-2 text-sm">This folder is empty</p></div>`;
+                    return;
+                }
+                content.innerHTML = `<div class="space-y-2" id="driveFileList"></div>`;
+                const list = document.getElementById('driveFileList');
+                files.forEach(file => {
+                    const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
+                    const icon = getFileIcon(file.mimeType);
+                    const size = formatFileSize(file.size);
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden';
+                    if (isFolder) {
+                        card.innerHTML = `<button onclick="driveOpenFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')" class="w-full flex items-center gap-3 p-4 hover:bg-teal-50 transition text-left"><span class="text-2xl">📁</span><div class="flex-1 min-w-0"><div class="font-semibold text-slate-800 truncate">${file.name}</div><div class="text-xs text-slate-400">Folder</div></div><i class="fas fa-chevron-right text-slate-300"></i></button>`;
+                    } else {
+                        const previewId = 'dp-' + file.id;
+                        const downloadUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+                        const embedUrl = `https://drive.google.com/file/d/${file.id}/preview`;
+                        card.id = 'dcard-' + file.id;
+                        card.innerHTML = `<div class="flex items-center gap-3 p-4"><span class="text-2xl flex-shrink-0">${icon}</span><div class="flex-1 min-w-0 cursor-pointer" onclick="toggleDrivePreview('${file.id}', '${embedUrl}')"><div class="font-semibold text-slate-800 text-sm truncate hover:text-teal-600 hover:underline">${file.name}</div><div class="text-xs text-slate-400">${size}</div></div><div class="flex gap-2 flex-shrink-0"><button onclick="toggleDrivePreview('${file.id}', '${embedUrl}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition"><i class="fas fa-eye"></i> Preview</button><a href="${downloadUrl}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition"><i class="fas fa-download"></i></a></div></div><div id="${previewId}" style="display:none;"><div class="border-t border-gray-100 bg-gray-50 px-4 py-2 flex justify-between items-center"><span class="text-xs text-slate-500 font-medium">📖 Preview</span><button onclick="toggleDrivePreview('${file.id}', '')" class="text-xs text-slate-400 hover:text-slate-600">✕ Close</button></div><div id="${previewId}-frame" style="height:75vh;"></div></div>`;
+                    }
+                    list.appendChild(card);
+                });
+            } catch (e) {
+                content.innerHTML = `<div class="text-center py-12"><div style="font-size:2rem;">⚠️</div><p class="text-slate-600 mt-2 text-sm font-medium">Could not load files</p><p class="text-slate-400 text-xs mt-1">${e.message}</p><p class="text-slate-400 text-xs mt-1">Make sure the folder is shared as "Anyone with link can view"</p></div>`;
+            }
+        }
+        function toggleDrivePreview(fileId, embedUrl) {
+            const previewEl = document.getElementById('dp-' + fileId);
+            const frameEl = document.getElementById('dp-' + fileId + '-frame');
+            const isVisible = previewEl.style.display !== 'none';
+            if (isVisible) {
+                previewEl.style.display = 'none';
+                frameEl.innerHTML = '';
+            } else {
+                frameEl.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" style="border:none;display:block;" allowfullscreen></iframe>`;
+                previewEl.style.display = 'block';
+                setTimeout(() => document.getElementById('dcard-' + fileId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // REORDERING (admin)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        async function moveQuickAccess(id, direction) {
+            const list = quickAccess;
+            const idx = list.findIndex(q => q.id === id);
+            if (idx === -1) return;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= list.length) return;
+            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+            list.forEach((item, i) => item.order = i);
+            try {
+                if (firebaseReady) {
+                    const updates = {};
+                    list.forEach(item => { updates['quickAccess/' + item.id + '/order'] = item.order; });
+                    await db.ref().update(updates);
+                }
+                renderHome();
+            } catch (e) { toast('❌ Could not save new order', 'error'); }
+        }
+        async function moveSubject(id, profId, direction) {
+            const list = subjects[profId];
+            if (!list) return;
+            const idx = list.findIndex(s => s.id === id);
+            if (idx === -1) return;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= list.length) return;
+            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+            list.forEach((item, i) => item.order = i);
+            try {
+                if (firebaseReady) {
+                    const updates = {};
+                    list.forEach(item => { updates['subjects/' + profId + '/' + item.id + '/order'] = item.order; });
+                    await db.ref().update(updates);
+                }
+                renderProfPage();
+            } catch (e) { toast('❌ Could not save new order', 'error'); }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // MOBILE MENU
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
