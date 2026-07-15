@@ -776,46 +776,52 @@
 
         // Open drug detail
         function openDrugDetail(categoryId) {
-            const category = drugCategories.find(c => c.id === categoryId);
-            if (!category) return;
-            
-            document.getElementById('drugCategoryGrid').style.display = 'none';
-            document.getElementById('drugDetailPage').style.display = 'block';
-            document.getElementById('drugDetailTitle').textContent = `${category.icon || '💊'} ${category.title || 'Drug'}`;
-            
-            const container = document.getElementById('drugDetailContent');
-            
-            if (category.sheetId) {
-                const previewUrl = `https://docs.google.com/spreadsheets/d/${category.sheetId}/preview?rm=minimal&widget=false&headers=false&chrome=false`;
-                container.innerHTML = `
-                    <div class="mb-4 flex gap-2 flex-wrap">
-                        ${isAdmin ? `<button onclick="openEditDrugCategoryModal('${category.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>` : ''}
-                    </div>
-                    <div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;background:white;width:100%;">
-                        <iframe 
-                            src="${previewUrl}" 
-                            style="width:100%;height:600px;border:none;display:block;"
-                            allowfullscreen
-                            loading="lazy">
-                        </iframe>
-                    </div>
-                    <div class="text-xs text-slate-400 mt-2 text-center">
-                        <i class="fas fa-sync-alt"></i> Auto-updates from Google Sheets
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div class="text-center py-8 text-slate-400">
-                        <div class="text-3xl mb-2">📭</div>
-                        <p>No sheet linked to this category.</p>
-                        ${isAdmin ? '<p class="text-xs mt-1">Click "Edit" to add a Sheet ID.</p>' : ''}
-                    </div>
-                `;
-            }
-            pushNavState();
-        }
+    const category = drugCategories.find(c => c.id === categoryId);
+    if (!category) return;
+    
+    document.getElementById('drugCategoryGrid').style.display = 'none';
+    document.getElementById('drugDetailPage').style.display = 'block';
+    document.getElementById('drugDetailTitle').textContent = `${category.icon || ''} ${category.title || 'Drug'}`;
+    
+    const container = document.getElementById('drugDetailContent');
+    
+    if (category.sheetId) {
+        //  USE THE SAME FORMAT AS QUICK ACCESS 
+        const sheetId = category.sheetId;
+        const previewUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal&widget=false&headers=false&chrome=false`;
+        
+        container.innerHTML = `
+            <div class="mb-4 flex gap-2 flex-wrap">
+                ${isAdmin ? `<button onclick="openEditDrugCategoryModal('${category.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition">
+                    <i class="fas fa-edit"></i> Edit
+                </button>` : ''}
+                <a href="https://docs.google.com/spreadsheets/d/${sheetId}/edit" target="_blank" class="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition">
+                    <i class="fas fa-external-link-alt"></i> Open in Sheets
+                </a>
+            </div>
+            <div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;background:white;width:100%;">
+                <iframe 
+                    src="${previewUrl}" 
+                    style="width:100%;height:600px;border:none;display:block;"
+                    allowfullscreen
+                    loading="lazy">
+                </iframe>
+            </div>
+            <div class="text-xs text-slate-400 mt-2 text-center">
+                <i class="fas fa-sync-alt"></i> Auto-updates from Google Sheets
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="text-center py-8 text-slate-400">
+                <div class="text-3xl mb-2"></div>
+                <p>No sheet linked to this category.</p>
+                ${isAdmin ? '<p class="text-xs mt-1">Click "Edit" to add a Sheet ID.</p>' : ''}
+            </div>
+        `;
+    }
+    pushNavState();
+}
 
         // Admin: Open Add Modal
         function openAddDrugCategoryModal() {
