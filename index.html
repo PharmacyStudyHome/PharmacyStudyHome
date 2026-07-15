@@ -750,7 +750,52 @@
                 else if (currentPage === 'home') renderHome();
             });
         }
-        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ENSURE DEFAULT QUICK ACCESS ITEMS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function ensureDefaultQuickAccess() {
+    const hasDrive = quickAccess.some(q => q.id === 'qa-drive');
+    const hasDrugIndex = quickAccess.some(q => q.id === 'qa-drug-index');
+    
+    if (!hasDrive) {
+        quickAccess.push({ 
+            id: 'qa-drive', 
+            title: 'Drive Files', 
+            icon: '📁',
+            driveFolder: GDRIVE_ROOT_FOLDER
+        });
+    }
+    if (!hasDrugIndex) {
+        quickAccess.push({ 
+            id: 'qa-drug-index', 
+            title: 'Drug Index', 
+            icon: '💊'
+        });
+    }
+    
+    // Also save to Firebase if they were added
+    if (!hasDrive || !hasDrugIndex) {
+        if (firebaseReady) {
+            const updates = {};
+            if (!hasDrive) {
+                updates['quickAccess/qa-drive'] = { 
+                    id: 'qa-drive', 
+                    title: 'Drive Files', 
+                    icon: '📁',
+                    driveFolder: GDRIVE_ROOT_FOLDER
+                };
+            }
+            if (!hasDrugIndex) {
+                updates['quickAccess/qa-drug-index'] = { 
+                    id: 'qa-drug-index', 
+                    title: 'Drug Index', 
+                    icon: '💊'
+                };
+            }
+            db.ref('/').update(updates).catch(e => console.warn('Could not save default items:', e));
+        }
+    }
+}
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // RENDER HOME (ALL ITEMS EDITABLE)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
