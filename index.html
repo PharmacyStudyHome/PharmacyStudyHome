@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <title>Pharmacy Study Home - FIXED!</title>
+    <title>Pharmacy Study Home</title>
     
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -118,18 +118,6 @@
         #toast.success { border-color: var(--success); }
         #toast.error { border-color: var(--danger); }
         #toast.warning { border-color: var(--warning); }
-        
-        .quick-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-        .quick-table th { background:#0d9488; color:white; padding:10px 12px; text-align:left; font-weight:600; }
-        .quick-table td { padding:9px 12px; border-bottom:1px solid #e2e8f0; color:#334155; vertical-align:top; }
-        .quick-table tr:last-child td { border-bottom:none; }
-        .quick-table tr:nth-child(even) td { background:#f8fafc; }
-        .quick-table tr:hover td { background:#f0fdfa; }
-        
-        .table-editor-cell { border:1px solid #e2e8f0; padding:0; }
-        .table-editor-cell input { width:100%; padding:7px 10px; border:none; outline:none; font-size:0.85rem; background:transparent; }
-        .table-editor-head { background:#f0fdfa; }
-        .table-editor-head input { font-weight:600; color:#0d9488; }
         
         .admin-controls {
             display: none;
@@ -269,7 +257,6 @@
             </button>
             <h2 id="profPageTitle" class="text-2xl font-bold text-slate-800 mb-6">Professional Year</h2>
             
-            <!-- Drive Files shortcut (shown only if prof has driveFolder set) -->
             <div id="profDriveSection" style="display:none;" class="mb-6">
                 <button id="profDriveBtn" class="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-2xl p-4 flex items-center gap-3 transition text-left">
                     <span class="text-2xl">📁</span>
@@ -296,7 +283,6 @@
             </button>
             <h2 id="subjectPageTitle" class="text-2xl font-bold text-slate-800 mb-6">Subject</h2>
             
-            <!-- Drive Files shortcut (shown only if subject has driveFolder set) -->
             <div id="subjectDriveSection" style="display:none;" class="mb-6">
                 <button id="subjectDriveBtn" class="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-2xl p-4 flex items-center gap-3 transition text-left">
                     <span class="text-2xl">📁</span>
@@ -439,7 +425,6 @@
         </div>
     </div>
     
-    <!-- RESOURCE MODAL -->
     <div id="resourceModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="resourceModalTitle" class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-plus-circle text-teal-600"></i> Add Resource</h3>
@@ -506,7 +491,6 @@
         </div>
     </div>
     
-    <!-- TABLE EDITOR MODAL -->
     <div id="tableEditorModal" class="modal-overlay">
         <div class="modal-box" style="max-width:95vw; width:600px;">
             <h3 class="text-xl font-bold text-slate-800 mb-1"><i class="fas fa-table text-teal-600"></i> Table Editor</h3>
@@ -531,7 +515,6 @@
         </div>
     </div>
 
-    <!-- GOOGLE SHEET LINK MODAL -->
     <div id="sheetLinkModal" class="modal-overlay">
         <div class="modal-box">
             <h3 class="text-xl font-bold text-slate-800 mb-1"><i class="fab fa-google text-teal-600"></i> Link Google Sheet</h3>
@@ -565,7 +548,6 @@
         let db = null;
         let auth = null;
         let firebaseReady = false;
-        // ⚠️ Replace with the email you created in Firebase Console → Authentication → Users
         const ADMIN_EMAIL = 'admin@psh.app';
         const GDRIVE_ROOT_FOLDER = '15pDtlHszZTCj79tielgIJ0kUWoW9ymGN';
         const DRIVE_PROXY_URL = 'https://psh-drive-proxy.pharmacystudyhub685.workers.dev/';
@@ -629,7 +611,7 @@
         let currentPage = 'home';
         let currentProfId = null;
         let currentSubjectId = null;
-        let currentTab = 'note';  // ⭐ FIXED: Changed from 'notes' to 'note'
+        let currentTab = 'note';
         let pageStack = [];
         let toastTimer = null;
         let liveSheetInterval = null;
@@ -638,10 +620,8 @@
         // INITIALIZATION
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         async function init() {
-            // Set defaults immediately so something shows while Firebase loads
             loadFromLocalStorage();
             
-            // Show loading screen while Firebase loads
             document.getElementById('appContent').style.display = 'none';
             document.getElementById('loadingScreen').style.display = 'flex';
             
@@ -663,7 +643,6 @@
         }
         
         function loadFromLocalStorage() {
-            // Set defaults as starting state before Firebase loads
             profs = [...DEFAULT_PROFS];
             subjects = JSON.parse(JSON.stringify(DEFAULT_SUBJECTS));
             resources = [...DEFAULT_RESOURCES];
@@ -674,9 +653,7 @@
             welcomeContent = { ...DEFAULT_WELCOME };
         }
         
-        function saveToLocalStorage() {
-            // No-op: Firebase is the single source of truth
-        }
+        function saveToLocalStorage() {}
         
         async function loadFromFirebase() {
             const snap = await db.ref('/').once('value');
@@ -685,7 +662,6 @@
             if (data.profs) {
                 const fbProfs = Object.values(data.profs);
                 if (fbProfs.length > 0) profs = fbProfs;
-                // else keep DEFAULT_PROFS set in loadFromLocalStorage
             }
             
             if (data.subjects) {
@@ -703,7 +679,6 @@
             if (data.quickAccess) {
                 const fbQA = Object.values(data.quickAccess);
                 if (fbQA.length > 0) quickAccess = fbQA;
-                // else keep DEFAULT_QUICK_ACCESS
             }
             
             if (data.quickContent) quickContent = data.quickContent;
@@ -714,13 +689,11 @@
                 });
             }
             if (data.quickTables) quickTables = data.quickTables;
-            // Only use Firebase welcome if it has a real title
             if (data.welcomeContent && data.welcomeContent.title && data.welcomeContent.title.length > 5) {
                 welcomeContent = data.welcomeContent;
             }
         }
         
-        // Called once after admin logs in — saves any defaults missing from Firebase
         async function seedMissingFirebaseData() {
             const snap = await db.ref('/').once('value');
             const data = snap.val() || {};
@@ -794,15 +767,6 @@
                 qaGrid.appendChild(btn);
             });
             
-            if (isAdmin) {
-                const addBtn = document.createElement('button');
-                addBtn.className = 'bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl font-semibold transition text-sm flex items-center gap-2';
-                addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Quick Access';
-                addBtn.onclick = openAddQuickAccessModal;
-                qaGrid.parentElement.appendChild(addBtn);
-            }
-            
-            // Drive Files button — always visible
             const driveBtn = document.createElement('button');
             driveBtn.className = 'bg-white hover:bg-blue-50 border border-gray-200 rounded-2xl p-4 text-center transition card-hover';
             driveBtn.innerHTML = `
@@ -811,6 +775,14 @@
             `;
             driveBtn.onclick = () => navigateToDrive(GDRIVE_ROOT_FOLDER, 'Drive Files');
             qaGrid.appendChild(driveBtn);
+            
+            if (isAdmin) {
+                const addBtn = document.createElement('button');
+                addBtn.className = 'bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl font-semibold transition text-sm flex items-center gap-2';
+                addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Quick Access';
+                addBtn.onclick = openAddQuickAccessModal;
+                qaGrid.parentElement.appendChild(addBtn);
+            }
             
             const profGrid = document.getElementById('profGrid');
             profGrid.innerHTML = '';
@@ -862,7 +834,6 @@
                 });
             }
             
-            // Show Drive Files section if this prof has a linked Drive folder
             const driveSectionEl = document.getElementById('profDriveSection');
             if (prof && prof.driveFolder) {
                 driveSectionEl.style.display = 'block';
@@ -880,15 +851,11 @@
             showPage('prof');
         }
         
-        // ⭐⭐⭐ FIXED: renderSubjectPage - tab values now match resource types ⭐⭐⭐
         function renderSubjectPage() {
-            console.log('🎨 Rendering subject page for:', currentSubjectId, '| Tab:', currentTab);
-            
             let subjectName = 'Subject';
             let subjectIcon = '📖';
             let subjectObj = null;
             
-            // Find subject name
             for (const pid in subjects) {
                 const found = subjects[pid].find(s => s.id === currentSubjectId);
                 if (found) { 
@@ -901,7 +868,6 @@
             
             document.getElementById('subjectPageTitle').textContent = `${subjectIcon} ${subjectName}`;
             
-            // Show Drive Files section if this subject has a linked Drive folder
             const subjectDriveSectionEl = document.getElementById('subjectDriveSection');
             if (subjectObj && subjectObj.driveFolder) {
                 subjectDriveSectionEl.style.display = 'block';
@@ -917,20 +883,11 @@
             }
             
             const container = document.getElementById('subjectContent');
-            
-            // ⭐ FIXED: Now currentTab matches resource.type exactly (both are 'note', 'file', 'link')
             const filtered = resources.filter(r => {
                 if (!r.subjectId || !r.type) return false;
-                
-                const subjectIdMatch = String(r.subjectId).trim() === String(currentSubjectId).trim();
-                const typeMatch = String(r.type).trim() === String(currentTab).trim();
-                
-                console.log(`Checking "${r.title}": subjectId match=${subjectIdMatch}, type match=${typeMatch} (res.type="${r.type}", currentTab="${currentTab}")`);
-                
-                return subjectIdMatch && typeMatch;
+                return String(r.subjectId).trim() === String(currentSubjectId).trim() && 
+                       String(r.type).trim() === String(currentTab).trim();
             });
-            
-            console.log(`📊 Filtered for ${currentTab}: ${filtered.length} / ${resources.length} total`);
             
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="empty-state"><span class="icon">📭</span>No ${currentTab}s found. Admin can add resources.</div>`;
@@ -1009,6 +966,9 @@
             showPage('subject');
         }
         
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ⭐ UPDATED: Render Quick Page
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function renderQuickPage() {
             const qaId = pageStack[pageStack.length - 1] || '';
             const item = quickAccess.find(q => q.id === qaId);
@@ -1020,7 +980,6 @@
             
             const content = quickContent[qaId] || '';
             const subItems = quickSubItems[qaId] || [];
-            const tableData = quickTables[qaId] || null;
             
             document.getElementById('quickPageContent').innerHTML = `
                 <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-3xl p-8 mb-6 relative">
@@ -1062,14 +1021,13 @@
                     ${item.sheetId ? `<div class="flex items-center justify-between mb-2 flex-wrap gap-2">
                         <div class="text-xs text-slate-400"><i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically</div>
                         <div class="flex text-xs rounded-lg overflow-hidden border border-gray-200">
-                            <button onclick="setSheetMode('${qaId}','data')" class="px-3 py-1.5 font-semibold ${(!item.sheetMode || item.sheetMode==='data') ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">📊 Styled Data</button>
-                            <button onclick="setSheetMode('${qaId}','embed')" class="px-3 py-1.5 font-semibold ${item.sheetMode==='embed' ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">📋 Plain Data</button>
+                            <button onclick="setSheetMode('${qaId}','data')" class="px-3 py-1.5 font-semibold ${(!item.sheetMode || item.sheetMode==='data') ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Styled Data</button>
+                            <button onclick="setSheetMode('${qaId}','embed')" class="px-3 py-1.5 font-semibold ${item.sheetMode==='embed' ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Full Formatting</button>
                         </div>
                     </div>` : ''}
                     <div id="quickTableDisplay"></div>
                 </div>
 
-                
                 <h3 class="font-semibold text-slate-800 mb-3">🔗 Links & Resources</h3>
                 <div id="quickSubItemsList" class="space-y-2"></div>
             `;
@@ -1077,15 +1035,12 @@
             const list = document.getElementById('quickSubItemsList');
             
             if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
-            if (item.sheetPubUrl) {
-                // Published HTML URL — always show with full formatting
-                loadLiveSheet(null, null, item.sheetPubUrl);
-            } else if (item.sheetId) {
+            if (item.sheetId) {
                 if (item.sheetMode === 'embed') {
-                    loadStyledData(item.sheetId, item.sheetGid);
+                    loadEmbedSheet(item.sheetId, item.sheetGid);
                 } else {
-                    loadLiveSheet(item.sheetId, item.sheetGid, null);
-                    liveSheetInterval = setInterval(() => loadLiveSheet(item.sheetId, item.sheetGid, null), 20000);
+                    loadLiveSheet(item.sheetId, item.sheetGid);
+                    liveSheetInterval = setInterval(() => loadLiveSheet(item.sheetId, item.sheetGid), 30000);
                 }
             } else {
                 renderQuickTable(qaId);
@@ -1120,6 +1075,150 @@
             }
             
             showPage('quick');
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ⭐ UPDATED: Load Live Sheet (Styled Data - FAST!)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        async function loadLiveSheet(sheetId, gid) {
+            const el = document.getElementById('quickTableDisplay');
+            if (!el) return;
+            
+            el.innerHTML = `<div class="text-center py-8 text-slate-400">
+                <div style="width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
+                <p class="text-sm">Loading sheet...</p>
+            </div>`;
+            
+            try {
+                // Fetch data from Worker (FAST!)
+                const workerUrl = `${DRIVE_PROXY_URL}?type=sheet-data&sheetId=${sheetId}&sheetName=Sheet1`;
+                
+                const response = await fetch(workerUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`Worker error: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                if (result.success && result.data) {
+                    // Parse with auto-formatting (FAST + looks good!)
+                    const tableHtml = parseSheetDataToHtml(result.data);
+                    
+                    el.innerHTML = `
+                        <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:auto;max-height:650px;background:white;">
+                            ${tableHtml}
+                        </div>
+                        <div class="text-xs text-slate-400 mt-2 text-center">
+                            <i class="fas fa-sync-alt"></i> Auto-updates from Google Sheets
+                        </div>`;
+                } else {
+                    throw new Error('Invalid response from Worker');
+                }
+                
+            } catch (e) {
+                el.innerHTML = `
+                    <div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
+                        ⚠️ Could not load styled sheet.<br>
+                        <span class="text-xs">${e.message}</span><br><br>
+                        <button onclick="loadEmbedSheet('${sheetId}','${gid || '0'}')" 
+                                class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                            <i class="fas fa-eye"></i> Switch to Full Formatting
+                        </button>
+                        <button onclick="loadLiveSheet('${sheetId}','${gid || '0'}')" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>`;
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ⭐ UPDATED: Load Embed Sheet (Full Formatting)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function loadEmbedSheet(sheetId, gid) {
+            const el = document.getElementById('quickTableDisplay');
+            if (!el) return;
+            
+            // ⭐ FULL FORMATTING - Shows everything exactly as in Google Sheets
+            const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal&widget=false&headers=false&chrome=false&gid=${gid || '0'}`;
+            
+            el.innerHTML = `
+                <div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;background:white;width:100%;">
+                    <iframe 
+                        src="${embedUrl}" 
+                        style="width:100%;height:600px;border:none;display:block;"
+                        allowfullscreen
+                        loading="lazy">
+                    </iframe>
+                </div>
+                <div class="text-xs text-slate-400 mt-2 text-center">
+                    <i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically
+                </div>
+            `;
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ⭐ UPDATED: Parse Sheet Data to HTML (Auto-Formatting)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function parseSheetDataToHtml(data) {
+            if (!data || !data.values || data.values.length === 0) {
+                return '<div class="text-center py-8 text-slate-400">No data found in sheet</div>';
+            }
+            
+            const rows = data.values;
+            
+            let html = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
+            
+            rows.forEach((row, rowIndex) => {
+                html += '<tr>';
+                
+                // First 2 rows = Headers (bold, teal background)
+                const isHeader = rowIndex === 0 || rowIndex === 1;
+                
+                // Find max columns
+                const maxCols = Math.max(...rows.map(r => r.length));
+                
+                for (let colIndex = 0; colIndex < maxCols; colIndex++) {
+                    let cell = row[colIndex] || '';
+                    let style = 'padding:10px 12px;border:1px solid #e2e8f0;';
+                    let displayText = cell;
+                    
+                    // ⭐ AUTO-FORMATTING: Make first column bold (drug names)
+                    if (colIndex === 0 && rowIndex > 1) {
+                        style += 'font-weight:bold;';
+                    }
+                    
+                    // ⭐ AUTO-FORMATTING: Headers
+                    if (isHeader) {
+                        style += 'font-weight:bold;background:#0d9488;color:white;';
+                    } else if (rowIndex % 2 === 1) {
+                        style += 'background:#f8fafc;';
+                    }
+                    
+                    // ⭐ AUTO-FORMATTING: Detect bold markers in text
+                    if (typeof cell === 'string') {
+                        if (cell.startsWith('**') && cell.endsWith('**')) {
+                            style += 'font-weight:bold;';
+                            displayText = cell.slice(2, -2);
+                        } else if (cell.startsWith('*') && cell.endsWith('*')) {
+                            style += 'font-weight:bold;';
+                            displayText = cell.slice(1, -1);
+                        }
+                    }
+                    
+                    const tag = isHeader ? 'th' : 'td';
+                    html += `<${tag} style="${style}">${displayText}</${tag}>`;
+                }
+                html += '</tr>';
+            });
+            
+            html += '</table>';
+            return html;
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1216,10 +1315,10 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // TABS - ⭐ FIXED: Now uses 'note', 'file', 'link' (without "s") ⭐
+        // TABS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function switchTab(tab) {
-            currentTab = tab;  // tab will be 'note', 'file', or 'link'
+            currentTab = tab;
             
             document.querySelectorAll('[id^="tab-"]').forEach(el => {
                 el.classList.remove('border-teal-600', 'text-teal-600');
@@ -1332,7 +1431,7 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ADMIN (secured via Firebase Authentication)
+        // ADMIN
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function openChangePasswordModal() {
             if (!isAdmin) {
@@ -1364,7 +1463,6 @@
             }
             
             try {
-                // Re-authenticate first since Firebase requires a recent login to change password
                 const cred = firebase.auth.EmailAuthProvider.credential(ADMIN_EMAIL, current);
                 await auth.currentUser.reauthenticateWithCredential(cred);
                 await auth.currentUser.updatePassword(newPass);
@@ -1392,7 +1490,7 @@
                 try {
                     await auth.signInWithEmailAndPassword(ADMIN_EMAIL, pass);
                     isAdmin = true;
-                    seedMissingFirebaseData(); // fill any missing defaults into Firebase
+                    seedMissingFirebaseData();
                     toast('✅ Admin Mode Activated', 'success');
                     document.getElementById('adminBtnText').textContent = 'Admin 👑';
                     document.querySelector('#fabAdmin i').className = 'fas fa-unlock';
@@ -1671,12 +1769,9 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ⭐⭐⭐ FIXED RESOURCE CRUD ⭐⭐⭐
+        // RESOURCE CRUD
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function openAddResourceModal() {
-            console.log('📝 Opening Add Resource Modal');
-            console.log('📝 Current Subject ID:', currentSubjectId);
-            
             document.getElementById('resourceModalTitle').textContent = 'Add Resource';
             document.getElementById('resourceEditId').value = '';
             document.getElementById('resourceSubjectId').value = currentSubjectId || '';
@@ -1686,7 +1781,6 @@
             document.getElementById('resourceFileType').value = '';
             document.getElementById('resourceFileSize').value = '';
             document.getElementById('resourceType').value = 'note';
-            
             openModal('resourceModal');
         }
         
@@ -1706,27 +1800,19 @@
             document.getElementById('resourceFileType').value = res.fileType || '';
             document.getElementById('resourceFileSize').value = res.fileSize || '';
             document.getElementById('resourceType').value = res.type || 'note';
-            
             openModal('resourceModal');
         }
         
-        // ⭐⭐⭐ CRITICAL FIX: Properly save resource ⭐⭐⭐
         async function saveResource() {
-            console.log('💾 ===== SAVING RESOURCE =====');
-            
-            // Get ALL form values directly
             const id = document.getElementById('resourceEditId').value;
             const subjectId = document.getElementById('resourceSubjectId').value;
-            const type = document.getElementById('resourceType').value;  // 'note', 'file', or 'link'
+            const type = document.getElementById('resourceType').value;
             const title = document.getElementById('resourceTitle').value.trim();
             const content = document.getElementById('resourceContent').value.trim();
             const url = document.getElementById('resourceUrl').value.trim();
             const fileType = document.getElementById('resourceFileType').value.trim();
             const fileSize = document.getElementById('resourceFileSize').value.trim();
             
-            console.log('📦 Form values:', { id, subjectId, type, title });
-            
-            // Validation
             if (!title) {
                 toast('⚠️ Please enter a title', 'error');
                 return;
@@ -1737,15 +1823,13 @@
                 return;
             }
             
-            // ⭐ CRITICAL: Build the resource data object with type matching tab values
             const resData = {
                 id: id || 'r_' + Date.now(),
                 subjectId: subjectId,
-                type: type,  // Will be 'note', 'file', or 'link' (without "s")
+                type: type,
                 title: title
             };
             
-            // Add type-specific fields
             if (type === 'note') {
                 resData.content = content || '';
             }
@@ -1760,42 +1844,23 @@
                 resData.fileSize = fileSize || '';
             }
             
-            console.log('📤 Final resource data:', resData);
-            
             try {
-                // ⭐ STEP 1: Save to Firebase
                 if (firebaseReady) {
-                    console.log('🔥 Saving to Firebase...');
                     await db.ref('resources/' + resData.id).set(resData);
-                    console.log('✅ Saved to Firebase');
                 }
                 
-                // ⭐ STEP 2: Update local array
                 const existingIndex = resources.findIndex(r => r.id === resData.id);
                 if (existingIndex !== -1) {
                     resources[existingIndex] = resData;
-                    console.log('✅ Updated existing resource');
                 } else {
                     resources.push(resData);
-                    console.log('✅ Added new resource');
                 }
                 
-                console.log('📊 Total resources now:', resources.length);
-                
-                // ⭐ STEP 3: Re-render
                 saveToLocalStorage();
-                
-                // ⭐ STEP 4: Close modal
                 closeModal('resourceModal');
-                
-                // ⭐ STEP 5: FORCE re-render
-                console.log('🔄 Force re-rendering subject page...');
                 currentSubjectId = subjectId;
                 renderSubjectPage();
-                
-                // ⭐ STEP 6: Show success
                 toast(id ? '✅ Resource updated!' : '✅ Resource added!', 'success');
-                console.log('✅ ===== RESOURCE SAVED SUCCESSFULLY =====');
                 
             } catch (e) {
                 console.error('❌ Error saving resource:', e);
@@ -1914,598 +1979,6 @@
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // QUICK CONTENT CRUD
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // QUICK TABLE FEATURE
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function renderQuickTable(qaId) {
-            const el = document.getElementById('quickTableDisplay');
-            if (!el) return;
-            const table = quickTables[qaId];
-            if (!table || !table.headers || table.headers.length === 0) {
-                el.innerHTML = isAdmin
-                    ? `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">No table yet — tap ✏️ Edit Table above to create one</div>`
-                    : `<div class="text-center text-slate-400 py-4 text-sm">No table added yet</div>`;
-                return;
-            }
-            
-            const headerRow = table.headers.map(h => `<th class="quick-table-th" style="background:#0d9488;color:white;padding:10px 12px;text-align:left;font-weight:600;">${h}</th>`).join('');
-            const bodyRows = (table.rows || []).map((row, i) => {
-                const bg = i % 2 === 1 ? 'background:#f8fafc;' : '';
-                const cells = table.headers.map((_, ci) => `<td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;color:#334155;vertical-align:top;${bg}">${row[ci] || ''}</td>`).join('');
-                return `<tr>${cells}</tr>`;
-            }).join('');
-            
-            el.innerHTML = `<div style="overflow-x:auto;border-radius:12px;border:1px solid #e2e8f0;">
-                <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
-                    <thead><tr>${headerRow}</tr></thead>
-                    <tbody>${bodyRows}</tbody>
-                </table>
-            </div>`;
-        }
-        
-        let editorState = { headers: [], rows: [] };
-        
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // LIVE GOOGLE SHEET (realtime table)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function openSheetLinkModal(qaId) {
-            document.getElementById('sheetLinkQaId').value = qaId;
-            const item = quickAccess.find(q => q.id === qaId);
-            document.getElementById('sheetLinkInput').value = '';
-            openModal('sheetLinkModal');
-        }
-        
-        async function saveSheetLink() {
-            const qaId = document.getElementById('sheetLinkQaId').value;
-            const url = document.getElementById('sheetLinkInput').value.trim();
-            
-            const item = quickAccess.find(q => q.id === qaId);
-            if (!item) return;
-            
-            // Handle published HTML format: /spreadsheets/d/e/PUBLISHED_ID/pubhtml
-            const pubMatch = url.match(/spreadsheets\/d\/e\/([a-zA-Z0-9-_]+)/);
-            // Handle regular format: /spreadsheets/d/SHEET_ID/
-            const idMatch = url.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-            
-            if (pubMatch) {
-                // Published URL — store full URL directly
-                const sheetPubUrl = `https://docs.google.com/spreadsheets/d/e/${pubMatch[1]}/pubhtml`;
-                item.sheetPubUrl = sheetPubUrl;
-                item.sheetId = null;
-                item.sheetGid = '0';
-                
-                try {
-                    if (firebaseReady) {
-                        await db.ref('quickAccess/' + qaId).update({ sheetPubUrl, sheetId: null, sheetGid: '0' });
-                    }
-                    closeModal('sheetLinkModal');
-                    toast('✅ Sheet linked!', 'success');
-                    renderQuickPage();
-                } catch (e) {
-                    toast('❌ Could not save sheet link', 'error');
-                }
-            } else if (idMatch) {
-                // Regular sheet URL
-                const sheetId = idMatch[1];
-                const gidMatch = url.match(/[#&]gid=([0-9]+)/);
-                const sheetGid = gidMatch ? gidMatch[1] : '0';
-                item.sheetId = sheetId;
-                item.sheetGid = sheetGid;
-                item.sheetPubUrl = null;
-                
-                try {
-                    if (firebaseReady) {
-                        await db.ref('quickAccess/' + qaId).update({ sheetId, sheetGid, sheetPubUrl: null });
-                    }
-                    closeModal('sheetLinkModal');
-                    toast('✅ Sheet linked!', 'success');
-                    renderQuickPage();
-                } catch (e) {
-                    toast('❌ Could not save sheet link', 'error');
-                }
-            } else {
-                toast('⚠️ Invalid Google Sheets link', 'error');
-            }
-        }
-        
-        async function unlinkSheet(qaId) {
-            const item = quickAccess.find(q => q.id === qaId);
-            if (!item) return;
-            delete item.sheetId;
-            delete item.sheetGid;
-            
-            try {
-                if (firebaseReady) {
-                    await db.ref('quickAccess/' + qaId + '/sheetId').remove();
-                    await db.ref('quickAccess/' + qaId + '/sheetGid').remove();
-                }
-                if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
-                renderQuickPage();
-            } catch (e) {
-                toast('❌ Could not unlink sheet', 'error');
-            }
-        }
-        
-        async function setSheetMode(qaId, mode) {
-            const item = quickAccess.find(q => q.id === qaId);
-            if (!item) return;
-            item.sheetMode = mode;
-            
-            try {
-                if (firebaseReady) {
-                    await db.ref('quickAccess/' + qaId + '/sheetMode').set(mode);
-                }
-                renderQuickPage();
-            } catch (e) {
-                toast('❌ Could not switch view', 'error');
-            }
-        }
-        
-        function loadEmbedSheet(sheetId, gid) {
-            const el = document.getElementById('quickTableDisplay');
-            if (!el) return;
-            const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/edit?usp=sharing&rm=minimal&widget=false&headers=false&gid=${gid || '0'}`;
-            el.innerHTML = `<div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
-                <iframe src="${embedUrl}" style="width:100%;height:70vh;border:none;display:block;" allowfullscreen></iframe>
-            </div>`;
-        }
-        
-        async function loadStyledData(sheetId, gid) {
-            const el = document.getElementById('quickTableDisplay');
-            if (!el) return;
-            
-            el.innerHTML = `<div class="text-center py-8 text-slate-400">
-                <div style="width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
-                <p class="text-sm">Loading data...</p>
-            </div>`;
-            
-            try {
-                const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&gid=${gid || '0'}`;
-                const res = await fetch(gvizUrl);
-                if (!res.ok) throw new Error('Could not reach sheet');
-                const text = await res.text();
-                const json = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
-                
-                const cols = json.table.cols.map(c => c.label || c.id || '');
-                const rows = json.table.rows || [];
-                
-                const headerRow = cols.map(h => `<th style="background:linear-gradient(135deg,#0d9488,#0f766e);color:white;padding:10px 12px;text-align:left;font-weight:700;white-space:nowrap;">${h}</th>`).join('');
-                const bodyRows = rows.map((row, i) => {
-                    const bg = i % 2 === 1 ? '#f0fdfa' : '#ffffff';
-                    const cells = (row.c || []).map((c, ci) => {
-                        const val = c ? (c.f !== undefined && c.f !== null ? c.f : (c.v !== undefined && c.v !== null ? c.v : '')) : '';
-                        return `<td style="padding:9px 12px;border-bottom:1px solid #d1fae5;color:${ci === 0 ? '#0f766e' : '#334155'};font-weight:${ci === 0 ? '600' : '400'};background:${bg};vertical-align:top;">${val}</td>`;
-                    }).join('');
-                    return `<tr>${cells}</tr>`;
-                }).join('');
-                
-                el.innerHTML = `<div style="overflow-x:auto;border-radius:12px;border:1px solid #99f6e4;">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
-                        <thead><tr>${headerRow}</tr></thead>
-                        <tbody>${bodyRows}</tbody>
-                    </table>
-                </div>`;
-                
-            } catch (e) {
-                el.innerHTML = `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
-                    ⚠️ Could not load data.<br><span class="text-xs">${e.message}</span><br>
-                    Make sure sheet is shared as "Anyone with link can view"
-                </div>`;
-            }
-        }
-        
-        async function loadLiveSheet(sheetId, gid, pubUrl) {
-            const el = document.getElementById('quickTableDisplay');
-            if (!el) return;
-            
-            el.innerHTML = `<div class="text-center py-8 text-slate-400">
-                <div style="width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
-                <p class="text-sm">Loading sheet...</p>
-            </div>`;
-            
-            const targetUrl = pubUrl || `https://docs.google.com/spreadsheets/d/${sheetId}/pub?output=html&gid=${gid || '0'}&single=true`;
-            
-            // Try multiple proxies in order
-            const proxies = [
-                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-                `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
-                `https://cors-anywhere.herokuapp.com/${targetUrl}`
-            ];
-            
-            let html = null;
-            let lastError = '';
-            
-            for (const proxyUrl of proxies) {
-                try {
-                    const res = await fetch(proxyUrl);
-                    if (!res.ok) continue;
-                    
-                    // allorigins returns JSON with .contents
-                    if (proxyUrl.includes('allorigins')) {
-                        const json = await res.json();
-                        html = json.contents;
-                    } else {
-                        html = await res.text();
-                    }
-                    
-                    if (html && html.includes('<table')) break;
-                    html = null;
-                } catch (e) {
-                    lastError = e.message;
-                    continue;
-                }
-            }
-            
-            if (!html) {
-                el.innerHTML = `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
-                    ⚠️ Could not load sheet.<br><span class="text-xs mt-1 block">${lastError}</span>
-                </div>`;
-                return;
-            }
-            
-            try {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const sheetTable = doc.querySelector('table');
-                const sheetStyles = doc.querySelector('style');
-                
-                if (!sheetTable) throw new Error('No table found');
-                
-                let scopedCss = '';
-                if (sheetStyles) {
-                    scopedCss = sheetStyles.textContent
-                        .split('}').map(rule => {
-                            if (!rule.trim()) return '';
-                            return '#sheetTableWrap ' + rule + '}';
-                        }).join('');
-                }
-                
-                el.innerHTML = `
-                    <style>
-                        #sheetTableWrap { overflow-x:auto; }
-                        #sheetTableWrap table { border-collapse:collapse; width:100%; font-size:0.82rem; }
-                        #sheetTableWrap td, #sheetTableWrap th { padding:6px 10px; }
-                        ${scopedCss}
-                    </style>
-                    <div id="sheetTableWrap" style="border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;overflow-x:auto;">
-                        ${sheetTable.outerHTML}
-                    </div>`;
-            } catch (e) {
-                el.innerHTML = `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
-                    ⚠️ Could not parse sheet.<br><span class="text-xs mt-1 block">${e.message}</span>
-                </div>`;
-            }
-        }
-        
-        function openTableEditorModal(qaId) {
-            document.getElementById('tableEditorQaId').value = qaId;
-            const saved = quickTables[qaId];
-            if (saved && saved.headers && saved.headers.length > 0) {
-                editorState = JSON.parse(JSON.stringify(saved));
-            } else {
-                editorState = { headers: ['Column 1', 'Column 2'], rows: [['', '']] };
-            }
-            renderEditorGrid();
-            openModal('tableEditorModal');
-        }
-        
-        function renderEditorGrid() {
-            const grid = document.getElementById('tableEditorGrid');
-            const cols = editorState.headers.length;
-            
-            // Header row
-            const headCells = editorState.headers.map((h, ci) =>
-                `<td class="table-editor-cell table-editor-head"><input value="${h.replace(/"/g,'&quot;')}" placeholder="Header ${ci+1}" onchange="editorState.headers[${ci}]=this.value"></td>`
-            ).join('');
-            
-            // Data rows
-            const bodyRows = editorState.rows.map((row, ri) => {
-                const cells = editorState.headers.map((_, ci) =>
-                    `<td class="table-editor-cell"><input value="${(row[ci]||'').replace(/"/g,'&quot;')}" placeholder="..." onchange="editorState.rows[${ri}][${ci}]=this.value"></td>`
-                ).join('');
-                return `<tr>${cells}</tr>`;
-            }).join('');
-            
-            grid.innerHTML = `<thead><tr>${headCells}</tr></thead><tbody>${bodyRows}</tbody>`;
-        }
-        
-        function addTableColumn() {
-            editorState.headers.push('Column ' + (editorState.headers.length + 1));
-            editorState.rows.forEach(r => r.push(''));
-            renderEditorGrid();
-        }
-        
-        function removeTableColumn() {
-            if (editorState.headers.length <= 1) { toast('⚠️ Need at least 1 column', 'error'); return; }
-            editorState.headers.pop();
-            editorState.rows.forEach(r => r.pop());
-            renderEditorGrid();
-        }
-        
-        function addTableRow() {
-            editorState.rows.push(editorState.headers.map(() => ''));
-            renderEditorGrid();
-        }
-        
-        function removeTableRow() {
-            if (editorState.rows.length <= 1) { toast('⚠️ Need at least 1 row', 'error'); return; }
-            editorState.rows.pop();
-            renderEditorGrid();
-        }
-        
-        async function saveTableData() {
-            const qaId = document.getElementById('tableEditorQaId').value;
-            // Sync any active input values before saving
-            document.querySelectorAll('#tableEditorGrid input').forEach(inp => inp.dispatchEvent(new Event('change')));
-            
-            const tableToSave = JSON.parse(JSON.stringify(editorState));
-            
-            try {
-                if (firebaseReady) {
-                    await db.ref('quickTables/' + qaId).set(tableToSave);
-                }
-                quickTables[qaId] = tableToSave;
-                saveToLocalStorage();
-                closeModal('tableEditorModal');
-                renderQuickPage();
-                toast('✅ Table saved!', 'success');
-            } catch (e) {
-                toast('❌ Error: ' + e.message, 'error');
-            }
-        }
-        
-        function getEmbedUrl(url) {
-            if (!url) return null;
-            // Convert Google Drive share/view link to embed/preview link
-            const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-            if (driveMatch) {
-                return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
-            }
-            // Convert Google Drive open link
-            const openMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
-            if (openMatch) {
-                return `https://drive.google.com/file/d/${openMatch[1]}/preview`;
-            }
-            // Fallback: try embedding directly (works for direct PDF links)
-            return url;
-        }
-        
-        function togglePreview(itemId, url) {
-            const previewEl = document.getElementById('preview-' + itemId);
-            const frameEl = document.getElementById('preview-frame-' + itemId);
-            const isVisible = previewEl.style.display !== 'none';
-            
-            if (isVisible) {
-                previewEl.style.display = 'none';
-                frameEl.innerHTML = ''; // unload iframe to stop background loading
-            } else {
-                const embedUrl = getEmbedUrl(url);
-                if (!embedUrl) {
-                    toast('❌ No URL provided for this resource', 'error');
-                    return;
-                }
-                frameEl.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" style="border:none;display:block;" allowfullscreen></iframe>`;
-                previewEl.style.display = 'block';
-                // Scroll to preview
-                setTimeout(() => document.getElementById('card-' + itemId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-            }
-        }
-        
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // GOOGLE DRIVE BROWSER
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        let driveStack = []; // [{id, name}] breadcrumb stack
-        let drivePreviewOpen = null;
-        
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // REORDERING (admin)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        async function moveQuickAccess(id, direction) {
-            const list = quickAccess;
-            const idx = list.findIndex(q => q.id === id);
-            if (idx === -1) return;
-            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
-            if (targetIdx < 0 || targetIdx >= list.length) return;
-            
-            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
-            list.forEach((item, i) => item.order = i);
-            
-            try {
-                if (firebaseReady) {
-                    const updates = {};
-                    list.forEach(item => { updates['quickAccess/' + item.id + '/order'] = item.order; });
-                    await db.ref().update(updates);
-                }
-                renderHome();
-            } catch (e) {
-                toast('❌ Could not save new order', 'error');
-            }
-        }
-        
-        async function moveSubject(id, profId, direction) {
-            const list = subjects[profId];
-            if (!list) return;
-            const idx = list.findIndex(s => s.id === id);
-            if (idx === -1) return;
-            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
-            if (targetIdx < 0 || targetIdx >= list.length) return;
-            
-            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
-            list.forEach((item, i) => item.order = i);
-            
-            try {
-                if (firebaseReady) {
-                    const updates = {};
-                    list.forEach(item => { updates['subjects/' + profId + '/' + item.id + '/order'] = item.order; });
-                    await db.ref().update(updates);
-                }
-                renderProfPage();
-            } catch (e) {
-                toast('❌ Could not save new order', 'error');
-            }
-        }
-        
-        function getFileIcon(mimeType) {
-            if (mimeType === 'application/vnd.google-apps.folder') return '📁';
-            if (mimeType === 'application/pdf') return '📄';
-            if (mimeType.includes('image')) return '🖼️';
-            if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
-            if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
-            if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return '📑';
-            if (mimeType.includes('video')) return '🎬';
-            if (mimeType.includes('audio')) return '🎵';
-            if (mimeType.includes('zip') || mimeType.includes('rar')) return '🗜️';
-            return '📎';
-        }
-        
-        function formatFileSize(bytes) {
-            if (!bytes) return '';
-            const kb = bytes / 1024;
-            if (kb < 1024) return Math.round(kb) + ' KB';
-            return (kb / 1024).toFixed(1) + ' MB';
-        }
-        
-        async function navigateToDrive(folderId, folderName) {
-            driveStack = [{ id: folderId, name: folderName }];
-            showPage('drive');
-            updateDriveBreadcrumb();
-            await loadDriveFolder(folderId);
-            pushNavState();
-        }
-        
-        async function driveOpenFolder(folderId, folderName) {
-            driveStack.push({ id: folderId, name: folderName });
-            updateDriveBreadcrumb();
-            await loadDriveFolder(folderId);
-            pushNavState();
-        }
-        
-        function driveGoBack() {
-            if (driveStack.length <= 1) {
-                goHome();
-                return;
-            }
-            driveStack.pop();
-            updateDriveBreadcrumb();
-            loadDriveFolder(driveStack[driveStack.length - 1].id);
-            history.back();
-        }
-        
-        function updateDriveBreadcrumb() {
-            const el = document.getElementById('driveBreadcrumb');
-            if (!el) return;
-            el.textContent = driveStack.map(s => s.name).join(' › ');
-            document.getElementById('driveBackBtn').innerHTML = driveStack.length <= 1
-                ? '<i class="fas fa-home"></i> Home'
-                : '<i class="fas fa-arrow-left"></i> Back';
-        }
-        
-        async function loadDriveFolder(folderId) {
-            const content = document.getElementById('drivePageContent');
-            content.innerHTML = `<div class="text-center py-12 text-slate-400">
-                <div style="width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
-                <p class="text-sm">Loading files...</p>
-            </div>`;
-            
-            try {
-                const url = `${DRIVE_PROXY_URL}?folderId=${folderId}`;
-                
-                const res = await fetch(url);
-                if (!res.ok) throw new Error('API error: ' + res.status);
-                const data = await res.json();
-                const files = data.files || [];
-                
-                if (files.length === 0) {
-                    content.innerHTML = `<div class="text-center py-12 text-slate-400">
-                        <div style="font-size:2rem;">📂</div>
-                        <p class="mt-2 text-sm">This folder is empty</p>
-                    </div>`;
-                    return;
-                }
-                
-                content.innerHTML = `<div class="space-y-2" id="driveFileList"></div>`;
-                const list = document.getElementById('driveFileList');
-                
-                files.forEach(file => {
-                    const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
-                    const isPdf = file.mimeType === 'application/pdf';
-                    const icon = getFileIcon(file.mimeType);
-                    const size = formatFileSize(file.size);
-                    
-                    const card = document.createElement('div');
-                    card.className = 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden';
-                    
-                    if (isFolder) {
-                        card.innerHTML = `
-                            <button onclick="driveOpenFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')"
-                                class="w-full flex items-center gap-3 p-4 hover:bg-teal-50 transition text-left">
-                                <span class="text-2xl">📁</span>
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-semibold text-slate-800 truncate">${file.name}</div>
-                                    <div class="text-xs text-slate-400">Folder</div>
-                                </div>
-                                <i class="fas fa-chevron-right text-slate-300"></i>
-                            </button>`;
-                    } else {
-                        const previewId = 'dp-' + file.id;
-                        const downloadUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
-                        const embedUrl = `https://drive.google.com/file/d/${file.id}/preview`;
-                        
-                        card.id = 'dcard-' + file.id;
-                        card.innerHTML = `
-                            <div class="flex items-center gap-3 p-4">
-                                <span class="text-2xl flex-shrink-0">${icon}</span>
-                                <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleDrivePreview('${file.id}', '${embedUrl}')">
-                                    <div class="font-semibold text-slate-800 text-sm truncate hover:text-teal-600 hover:underline">${file.name}</div>
-                                    <div class="text-xs text-slate-400">${size}</div>
-                                </div>
-                                <div class="flex gap-2 flex-shrink-0">
-                                    <button onclick="toggleDrivePreview('${file.id}', '${embedUrl}')"
-                                        class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
-                                        <i class="fas fa-eye"></i> Preview
-                                    </button>
-                                    <a href="${downloadUrl}" target="_blank"
-                                        class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition">
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div id="${previewId}" style="display:none;">
-                                <div class="border-t border-gray-100 bg-gray-50 px-4 py-2 flex justify-between items-center">
-                                    <span class="text-xs text-slate-500 font-medium">📖 Preview</span>
-                                    <button onclick="toggleDrivePreview('${file.id}', '')" class="text-xs text-slate-400 hover:text-slate-600">✕ Close</button>
-                                </div>
-                                <div id="${previewId}-frame" style="height:75vh;"></div>
-                            </div>`;
-                    }
-                    list.appendChild(card);
-                });
-                
-            } catch (e) {
-                content.innerHTML = `<div class="text-center py-12">
-                    <div style="font-size:2rem;">⚠️</div>
-                    <p class="text-slate-600 mt-2 text-sm font-medium">Could not load files</p>
-                    <p class="text-slate-400 text-xs mt-1">${e.message}</p>
-                    <p class="text-slate-400 text-xs mt-1">Make sure the folder is shared as "Anyone with link can view"</p>
-                </div>`;
-            }
-        }
-        
-        function toggleDrivePreview(fileId, embedUrl) {
-            const previewEl = document.getElementById('dp-' + fileId);
-            const frameEl = document.getElementById('dp-' + fileId + '-frame');
-            const isVisible = previewEl.style.display !== 'none';
-            
-            if (isVisible) {
-                previewEl.style.display = 'none';
-                frameEl.innerHTML = '';
-            } else {
-                frameEl.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" style="border:none;display:block;" allowfullscreen></iframe>`;
-                previewEl.style.display = 'block';
-                setTimeout(() => document.getElementById('dcard-' + fileId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-            }
-        }
-        
         function openQuickContentModal(id) {
             document.getElementById('quickContentId').value = id;
             document.getElementById('quickContentText').value = quickContent[id] || '';
@@ -2612,6 +2085,440 @@
                 toast('🗑️ Deleted!', 'success');
             } catch (e) {
                 toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // QUICK TABLE FEATURE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function renderQuickTable(qaId) {
+            const el = document.getElementById('quickTableDisplay');
+            if (!el) return;
+            const table = quickTables[qaId];
+            if (!table || !table.headers || table.headers.length === 0) {
+                el.innerHTML = isAdmin
+                    ? `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">No table yet — tap ✏️ Edit Table above to create one</div>`
+                    : `<div class="text-center text-slate-400 py-4 text-sm">No table added yet</div>`;
+                return;
+            }
+            
+            const headerRow = table.headers.map(h => `<th class="quick-table-th" style="background:#0d9488;color:white;padding:10px 12px;text-align:left;font-weight:600;">${h}</th>`).join('');
+            const bodyRows = (table.rows || []).map((row, i) => {
+                const bg = i % 2 === 1 ? 'background:#f8fafc;' : '';
+                const cells = table.headers.map((_, ci) => `<td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;color:#334155;vertical-align:top;${bg}">${row[ci] || ''}</td>`).join('');
+                return `<tr>${cells}</tr>`;
+            }).join('');
+            
+            el.innerHTML = `<div style="overflow-x:auto;border-radius:12px;border:1px solid #e2e8f0;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                    <thead><tr>${headerRow}</tr></thead>
+                    <tbody>${bodyRows}</tbody>
+                </table>
+            </div>`;
+        }
+        
+        let editorState = { headers: [], rows: [] };
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // LIVE GOOGLE SHEET
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openSheetLinkModal(qaId) {
+            document.getElementById('sheetLinkQaId').value = qaId;
+            const item = quickAccess.find(q => q.id === qaId);
+            document.getElementById('sheetLinkInput').value = '';
+            openModal('sheetLinkModal');
+        }
+        
+        async function saveSheetLink() {
+            const qaId = document.getElementById('sheetLinkQaId').value;
+            const url = document.getElementById('sheetLinkInput').value.trim();
+            
+            const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!idMatch) {
+                toast('⚠️ Could not find a Sheet ID in that link', 'error');
+                return;
+            }
+            const sheetId = idMatch[1];
+            const gidMatch = url.match(/[#&]gid=([0-9]+)/);
+            const sheetGid = gidMatch ? gidMatch[1] : '0';
+            
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            item.sheetId = sheetId;
+            item.sheetGid = sheetGid;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickAccess/' + qaId).update({ sheetId, sheetGid });
+                }
+                closeModal('sheetLinkModal');
+                toast('✅ Sheet linked!', 'success');
+                renderQuickPage();
+            } catch (e) {
+                toast('❌ Could not save sheet link', 'error');
+            }
+        }
+        
+        async function unlinkSheet(qaId) {
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            delete item.sheetId;
+            delete item.sheetGid;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickAccess/' + qaId + '/sheetId').remove();
+                    await db.ref('quickAccess/' + qaId + '/sheetGid').remove();
+                }
+                if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
+                renderQuickPage();
+            } catch (e) {
+                toast('❌ Could not unlink sheet', 'error');
+            }
+        }
+        
+        async function setSheetMode(qaId, mode) {
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            item.sheetMode = mode;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickAccess/' + qaId + '/sheetMode').set(mode);
+                }
+                renderQuickPage();
+            } catch (e) {
+                toast('❌ Could not switch view', 'error');
+            }
+        }
+        
+        function loadEmbedSheet(sheetId, gid) {
+            const el = document.getElementById('quickTableDisplay');
+            if (!el) return;
+            const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal&widget=false&headers=false&gid=${gid || '0'}`;
+            el.innerHTML = `<div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
+                <iframe src="${embedUrl}" style="width:100%;height:70vh;border:none;display:block;" allowfullscreen></iframe>
+            </div>`;
+        }
+        
+        function openTableEditorModal(qaId) {
+            document.getElementById('tableEditorQaId').value = qaId;
+            const saved = quickTables[qaId];
+            if (saved && saved.headers && saved.headers.length > 0) {
+                editorState = JSON.parse(JSON.stringify(saved));
+            } else {
+                editorState = { headers: ['Column 1', 'Column 2'], rows: [['', '']] };
+            }
+            renderEditorGrid();
+            openModal('tableEditorModal');
+        }
+        
+        function renderEditorGrid() {
+            const grid = document.getElementById('tableEditorGrid');
+            const cols = editorState.headers.length;
+            
+            const headCells = editorState.headers.map((h, ci) =>
+                `<td class="table-editor-cell table-editor-head"><input value="${h.replace(/"/g,'&quot;')}" placeholder="Header ${ci+1}" onchange="editorState.headers[${ci}]=this.value"></td>`
+            ).join('');
+            
+            const bodyRows = editorState.rows.map((row, ri) => {
+                const cells = editorState.headers.map((_, ci) =>
+                    `<td class="table-editor-cell"><input value="${(row[ci]||'').replace(/"/g,'&quot;')}" placeholder="..." onchange="editorState.rows[${ri}][${ci}]=this.value"></td>`
+                ).join('');
+                return `<tr>${cells}</tr>`;
+            }).join('');
+            
+            grid.innerHTML = `<thead><tr>${headCells}</tr></thead><tbody>${bodyRows}</tbody>`;
+        }
+        
+        function addTableColumn() {
+            editorState.headers.push('Column ' + (editorState.headers.length + 1));
+            editorState.rows.forEach(r => r.push(''));
+            renderEditorGrid();
+        }
+        
+        function removeTableColumn() {
+            if (editorState.headers.length <= 1) { toast('⚠️ Need at least 1 column', 'error'); return; }
+            editorState.headers.pop();
+            editorState.rows.forEach(r => r.pop());
+            renderEditorGrid();
+        }
+        
+        function addTableRow() {
+            editorState.rows.push(editorState.headers.map(() => ''));
+            renderEditorGrid();
+        }
+        
+        function removeTableRow() {
+            if (editorState.rows.length <= 1) { toast('⚠️ Need at least 1 row', 'error'); return; }
+            editorState.rows.pop();
+            renderEditorGrid();
+        }
+        
+        async function saveTableData() {
+            const qaId = document.getElementById('tableEditorQaId').value;
+            document.querySelectorAll('#tableEditorGrid input').forEach(inp => inp.dispatchEvent(new Event('change')));
+            
+            const tableToSave = JSON.parse(JSON.stringify(editorState));
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickTables/' + qaId).set(tableToSave);
+                }
+                quickTables[qaId] = tableToSave;
+                saveToLocalStorage();
+                closeModal('tableEditorModal');
+                renderQuickPage();
+                toast('✅ Table saved!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        function getEmbedUrl(url) {
+            if (!url) return null;
+            const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (driveMatch) {
+                return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+            }
+            const openMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+            if (openMatch) {
+                return `https://drive.google.com/file/d/${openMatch[1]}/preview`;
+            }
+            return url;
+        }
+        
+        function togglePreview(itemId, url) {
+            const previewEl = document.getElementById('preview-' + itemId);
+            const frameEl = document.getElementById('preview-frame-' + itemId);
+            const isVisible = previewEl.style.display !== 'none';
+            
+            if (isVisible) {
+                previewEl.style.display = 'none';
+                frameEl.innerHTML = '';
+            } else {
+                const embedUrl = getEmbedUrl(url);
+                if (!embedUrl) {
+                    toast('❌ No URL provided for this resource', 'error');
+                    return;
+                }
+                frameEl.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" style="border:none;display:block;" allowfullscreen></iframe>`;
+                previewEl.style.display = 'block';
+                setTimeout(() => document.getElementById('card-' + itemId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // GOOGLE DRIVE BROWSER
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        let driveStack = [];
+        let drivePreviewOpen = null;
+        
+        function getFileIcon(mimeType) {
+            if (mimeType === 'application/vnd.google-apps.folder') return '📁';
+            if (mimeType === 'application/pdf') return '📄';
+            if (mimeType.includes('image')) return '🖼️';
+            if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
+            if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
+            if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return '📑';
+            if (mimeType.includes('video')) return '🎬';
+            if (mimeType.includes('audio')) return '🎵';
+            if (mimeType.includes('zip') || mimeType.includes('rar')) return '🗜️';
+            return '📎';
+        }
+        
+        function formatFileSize(bytes) {
+            if (!bytes) return '';
+            const kb = bytes / 1024;
+            if (kb < 1024) return Math.round(kb) + ' KB';
+            return (kb / 1024).toFixed(1) + ' MB';
+        }
+        
+        async function navigateToDrive(folderId, folderName) {
+            driveStack = [{ id: folderId, name: folderName }];
+            showPage('drive');
+            updateDriveBreadcrumb();
+            await loadDriveFolder(folderId);
+            pushNavState();
+        }
+        
+        async function driveOpenFolder(folderId, folderName) {
+            driveStack.push({ id: folderId, name: folderName });
+            updateDriveBreadcrumb();
+            await loadDriveFolder(folderId);
+            pushNavState();
+        }
+        
+        function driveGoBack() {
+            if (driveStack.length <= 1) {
+                goHome();
+                return;
+            }
+            driveStack.pop();
+            updateDriveBreadcrumb();
+            loadDriveFolder(driveStack[driveStack.length - 1].id);
+            history.back();
+        }
+        
+        function updateDriveBreadcrumb() {
+            const el = document.getElementById('driveBreadcrumb');
+            if (!el) return;
+            el.textContent = driveStack.map(s => s.name).join(' › ');
+            document.getElementById('driveBackBtn').innerHTML = driveStack.length <= 1
+                ? '<i class="fas fa-home"></i> Home'
+                : '<i class="fas fa-arrow-left"></i> Back';
+        }
+        
+        async function loadDriveFolder(folderId) {
+            const content = document.getElementById('drivePageContent');
+            content.innerHTML = `<div class="text-center py-12 text-slate-400">
+                <div style="width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
+                <p class="text-sm">Loading files...</p>
+            </div>`;
+            
+            try {
+                const url = `${DRIVE_PROXY_URL}?type=drive&folderId=${folderId}`;
+                
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                const files = data.files || [];
+                
+                if (files.length === 0) {
+                    content.innerHTML = `<div class="text-center py-12 text-slate-400">
+                        <div style="font-size:2rem;">📂</div>
+                        <p class="mt-2 text-sm">This folder is empty</p>
+                    </div>`;
+                    return;
+                }
+                
+                content.innerHTML = `<div class="space-y-2" id="driveFileList"></div>`;
+                const list = document.getElementById('driveFileList');
+                
+                files.forEach(file => {
+                    const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
+                    const icon = getFileIcon(file.mimeType);
+                    const size = formatFileSize(file.size);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden';
+                    
+                    if (isFolder) {
+                        card.innerHTML = `
+                            <button onclick="driveOpenFolder('${file.id}', '${file.name.replace(/'/g, "\\'")}')"
+                                class="w-full flex items-center gap-3 p-4 hover:bg-teal-50 transition text-left">
+                                <span class="text-2xl">📁</span>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-slate-800 truncate">${file.name}</div>
+                                    <div class="text-xs text-slate-400">Folder</div>
+                                </div>
+                                <i class="fas fa-chevron-right text-slate-300"></i>
+                            </button>`;
+                    } else {
+                        const previewId = 'dp-' + file.id;
+                        const downloadUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+                        const embedUrl = `https://drive.google.com/file/d/${file.id}/preview`;
+                        
+                        card.id = 'dcard-' + file.id;
+                        card.innerHTML = `
+                            <div class="flex items-center gap-3 p-4">
+                                <span class="text-2xl flex-shrink-0">${icon}</span>
+                                <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleDrivePreview('${file.id}', '${embedUrl}')">
+                                    <div class="font-semibold text-slate-800 text-sm truncate hover:text-teal-600 hover:underline">${file.name}</div>
+                                    <div class="text-xs text-slate-400">${size}</div>
+                                </div>
+                                <div class="flex gap-2 flex-shrink-0">
+                                    <button onclick="toggleDrivePreview('${file.id}', '${embedUrl}')"
+                                        class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
+                                        <i class="fas fa-eye"></i> Preview
+                                    </button>
+                                    <a href="${downloadUrl}" target="_blank"
+                                        class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div id="${previewId}" style="display:none;">
+                                <div class="border-t border-gray-100 bg-gray-50 px-4 py-2 flex justify-between items-center">
+                                    <span class="text-xs text-slate-500 font-medium">📖 Preview</span>
+                                    <button onclick="toggleDrivePreview('${file.id}', '')" class="text-xs text-slate-400 hover:text-slate-600">✕ Close</button>
+                                </div>
+                                <div id="${previewId}-frame" style="height:75vh;"></div>
+                            </div>`;
+                    }
+                    list.appendChild(card);
+                });
+                
+            } catch (e) {
+                content.innerHTML = `<div class="text-center py-12">
+                    <div style="font-size:2rem;">⚠️</div>
+                    <p class="text-slate-600 mt-2 text-sm font-medium">Could not load files</p>
+                    <p class="text-slate-400 text-xs mt-1">${e.message}</p>
+                    <p class="text-slate-400 text-xs mt-1">Make sure the folder is shared as "Anyone with link can view"</p>
+                </div>`;
+            }
+        }
+        
+        function toggleDrivePreview(fileId, embedUrl) {
+            const previewEl = document.getElementById('dp-' + fileId);
+            const frameEl = document.getElementById('dp-' + fileId + '-frame');
+            const isVisible = previewEl.style.display !== 'none';
+            
+            if (isVisible) {
+                previewEl.style.display = 'none';
+                frameEl.innerHTML = '';
+            } else {
+                frameEl.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" style="border:none;display:block;" allowfullscreen></iframe>`;
+                previewEl.style.display = 'block';
+                setTimeout(() => document.getElementById('dcard-' + fileId).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // REORDERING (admin)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        async function moveQuickAccess(id, direction) {
+            const list = quickAccess;
+            const idx = list.findIndex(q => q.id === id);
+            if (idx === -1) return;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= list.length) return;
+            
+            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+            list.forEach((item, i) => item.order = i);
+            
+            try {
+                if (firebaseReady) {
+                    const updates = {};
+                    list.forEach(item => { updates['quickAccess/' + item.id + '/order'] = item.order; });
+                    await db.ref().update(updates);
+                }
+                renderHome();
+            } catch (e) {
+                toast('❌ Could not save new order', 'error');
+            }
+        }
+        
+        async function moveSubject(id, profId, direction) {
+            const list = subjects[profId];
+            if (!list) return;
+            const idx = list.findIndex(s => s.id === id);
+            if (idx === -1) return;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= list.length) return;
+            
+            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+            list.forEach((item, i) => item.order = i);
+            
+            try {
+                if (firebaseReady) {
+                    const updates = {};
+                    list.forEach(item => { updates['subjects/' + profId + '/' + item.id + '/order'] = item.order; });
+                    await db.ref().update(updates);
+                }
+                renderProfPage();
+            } catch (e) {
+                toast('❌ Could not save new order', 'error');
             }
         }
         
