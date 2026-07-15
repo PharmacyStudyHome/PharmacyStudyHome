@@ -2103,16 +2103,47 @@
                 <p class="text-sm">Loading sheet...</p>
             </div>`;
             
+            const targetUrl = pubUrl || `https://docs.google.com/spreadsheets/d/${sheetId}/pub?output=html&gid=${gid || '0'}&single=true`;
+            
+            // Try multiple proxies in order
+            const proxies = [
+                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+                `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
+                `https://cors-anywhere.herokuapp.com/${targetUrl}`
+            ];
+            
+            let html = null;
+            let lastError = '';
+            
+            for (const proxyUrl of proxies) {
+                try {
+                    const res = await fetch(proxyUrl);
+                    if (!res.ok) continue;
+                    
+                    // allorigins returns JSON with .contents
+                    if (proxyUrl.includes('allorigins')) {
+                        const json = await res.json();
+                        html = json.contents;
+                    } else {
+                        html = await res.text();
+                    }
+                    
+                    if (html && html.includes('<table')) break;
+                    html = null;
+                } catch (e) {
+                    lastError = e.message;
+                    continue;
+                }
+            }
+            
+            if (!html) {
+                el.innerHTML = `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
+                    ⚠️ Could not load sheet.<br><span class="text-xs mt-1 block">${lastError}</span>
+                </div>`;
+                return;
+            }
+            
             try {
-                // Use provided pubUrl or construct from sheetId
-                const targetUrl = pubUrl || `https://docs.google.com/spreadsheets/d/${sheetId}/pub?output=html&gid=${gid || '0'}&single=true`;
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-                
-                const res = await fetch(proxyUrl);
-                if (!res.ok) throw new Error('Fetch error: ' + res.status);
-                const json = await res.json();
-                const html = json.contents;
-                
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 const sheetTable = doc.querySelector('table');
@@ -2120,7 +2151,6 @@
                 
                 if (!sheetTable) throw new Error('No table found');
                 
-                // Scope styles so they don't affect the rest of the app
                 let scopedCss = '';
                 if (sheetStyles) {
                     scopedCss = sheetStyles.textContent
@@ -2134,16 +2164,15 @@
                     <style>
                         #sheetTableWrap { overflow-x:auto; }
                         #sheetTableWrap table { border-collapse:collapse; width:100%; font-size:0.82rem; }
-                        #sheetTableWrap td, #sheetTableWrap th { padding: 6px 10px; }
+                        #sheetTableWrap td, #sheetTableWrap th { padding:6px 10px; }
                         ${scopedCss}
                     </style>
                     <div id="sheetTableWrap" style="border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;overflow-x:auto;">
                         ${sheetTable.outerHTML}
                     </div>`;
-                    
             } catch (e) {
                 el.innerHTML = `<div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
-                    ⚠️ Could not load sheet.<br><span class="text-xs mt-1 block">${e.message}</span>
+                    ⚠️ Could not parse sheet.<br><span class="text-xs mt-1 block">${e.message}</span>
                 </div>`;
             }
         }
