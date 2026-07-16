@@ -1150,6 +1150,9 @@
             }
             
             showPage('quick');
+            
+            // Hide empty sections in viewer mode
+            hideEmptyTables();
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1184,8 +1187,15 @@
             let sheetViewHtml = '';
             if (cat.sheetId) {
                 sheetViewHtml = `
+                    <div class="mb-4">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input id="categorySearchInput" type="text" placeholder="Search in this sheet..." oninput="filterCategorySheet(this.value)" class="w-full pl-11 pr-10 py-3 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm shadow-sm">
+                            <button id="categorySearchClear" onclick="clearCategorySearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
                     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-                        <div class="text-xs text-slate-400"><i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically</div>
+                        <div class="text-xs text-slate-400"><i class="fas fa-sync-alt"></i> Live from Google Sheets</div>
                         <div class="flex text-xs rounded-lg overflow-hidden border border-gray-200">
                             <button onclick="setCategorySheetMode('${qaId}','${catId}','data')" id="catModeData-${catId}" class="px-3 py-1.5 font-semibold ${(!cat.sheetMode || cat.sheetMode==='data') ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Styled Data</button>
                             <button onclick="setCategorySheetMode('${qaId}','${catId}','embed')" id="catModeEmbed-${catId}" class="px-3 py-1.5 font-semibold ${cat.sheetMode==='embed' ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Full Formatting</button>
@@ -1212,7 +1222,7 @@
                     <h2 class="text-2xl font-bold">${cat.title}</h2>
                     ${cat.sheetId ? '<p class="text-indigo-200 text-sm mt-1"><i class="fas fa-table mr-1"></i> Linked to Google Sheet</p>' : ''}
                 </div>
-                ${sheetViewHtml}
+                <div id="catSheetSection">${sheetViewHtml}</div>
             `;
             
             // Load the sheet
@@ -1227,6 +1237,9 @@
             }
             
             showPage('category');
+            
+            // Hide empty sections in viewer mode
+            hideEmptyTables();
         }
         
         async function loadCategorySheet(catId, sheetId, gid) {
@@ -1462,6 +1475,85 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // CATEGORY SHEET SEARCH
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function filterCategorySheet(query) {
+            const clearBtn = document.getElementById('categorySearchClear');
+            if (clearBtn) clearBtn.classList.toggle('hidden', !query);
+            
+            const table = document.querySelector('#categorySheetDisplay table');
+            if (!table) return;
+            
+            const rows = table.querySelectorAll('tbody tr');
+            let visibleCount = 0;
+            const q = query.toLowerCase().trim();
+            
+            rows.forEach(row => {
+                if (!q) { row.style.display = ''; visibleCount++; return; }
+                const text = row.textContent.toLowerCase();
+                if (text.includes(q)) { row.style.display = ''; visibleCount++; }
+                else { row.style.display = 'none'; }
+            });
+            
+            // Show "no results" message
+            let noResults = document.getElementById('categorySearchNoResults');
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.id = 'categorySearchNoResults';
+                noResults.className = 'text-center py-6 text-slate-400 text-sm';
+                noResults.innerHTML = '🔍 No matching results found';
+                noResults.style.display = 'none';
+                const display = document.getElementById('categorySheetDisplay');
+                if (display) display.appendChild(noResults);
+            }
+            noResults.style.display = (q && visibleCount === 0) ? 'block' : 'none';
+        }
+        
+        function clearCategorySearch() {
+            const input = document.getElementById('categorySearchInput');
+            if (input) { input.value = ''; filterCategorySheet(''); }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // HIDE EMPTY TABLES (viewer mode)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function hideEmptyTables() {
+            if (isAdmin) return;
+            
+            // Hide empty quick table display
+            const qtd = document.getElementById('quickTableDisplay');
+            if (qtd) {
+                const hasContent = qtd.querySelector('table');
+                if (!hasContent) {
+                    const section = qtd.closest('.mb-6');
+                    if (section) section.style.display = 'none';
+                }
+            }
+            
+            // Hide empty category sheet section
+            const catSection = document.getElementById('catSheetSection');
+            if (catSection) {
+                const csd = document.getElementById('categorySheetDisplay');
+                if (csd) {
+                    const hasContent = csd.querySelector('table');
+                    if (!hasContent) catSection.style.display = 'none';
+                }
+                // Also hide if it shows "No Google Sheet linked"
+                if (catSection.textContent.includes('No Google Sheet linked')) {
+                    catSection.style.display = 'none';
+                }
+            }
+            
+            // Hide empty quick sub-items list
+            const qsList = document.getElementById('quickSubItemsList');
+            if (qsList && qsList.children.length === 0) {
+                const prevH3 = qsList.previousElementSibling;
+                if (prevH3 && prevH3.tagName === 'H3') prevH3.style.display = 'none';
+                qsList.style.display = 'none';
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // ⭐ Load Live Sheet (Styled Data - FAST!)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         async function loadLiveSheet(sheetId, gid) {
@@ -1561,7 +1653,7 @@
                     }
                     
                     if (isHeader) {
-                        style += 'font-weight:bold;background:#0d9488;color:white;';
+                        style += 'font-weight:bold;background:#0d9488;color:white;position:sticky;top:0;z-index:1;';
                     } else if (rowIndex % 2 === 1) {
                         style += 'background:#f8fafc;';
                     }
@@ -3043,5 +3135,5 @@
             init();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1bf2401dbe3bd75',t:'MTc4NDE4NTMzOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1bfeaa3dadcce25',t:'MTc4NDE5MzQ3NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
