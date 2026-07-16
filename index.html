@@ -610,6 +610,12 @@
             if (data.profs) {
                 const fbProfs = Object.values(data.profs);
                 if (fbProfs.length > 0) profs = fbProfs;
+                // Ensure driveFolders is always an array
+                profs.forEach(p => {
+                    if (p.driveFolders && !Array.isArray(p.driveFolders)) {
+                        p.driveFolders = Object.values(p.driveFolders);
+                    }
+                });
             }
             
             if (data.subjects) {
@@ -1950,8 +1956,16 @@
                 return; 
             }
             
+            // Find existing prof to preserve driveFolders
+            const existingProf = id ? profs.find(p => p.id === id) : null;
+            
             const profData = { id: id || 'p' + Date.now(), title, icon };
             if (driveFolder) profData.driveFolder = driveFolder;
+            
+            // CRITICAL: Preserve driveFolders array when editing
+            if (existingProf && existingProf.driveFolders) {
+                profData.driveFolders = existingProf.driveFolders;
+            }
             
             try {
                 if (firebaseReady) {
@@ -2129,15 +2143,27 @@
             const profId = document.getElementById('driveFolderProfId').value;
             const title = document.getElementById('driveFolderNameInput').value.trim();
             const icon = document.getElementById('driveFolderIconInput').value.trim() || '📁';
-            const folderId = document.getElementById('driveFolderIdInput').value.trim();
+            const rawInput = document.getElementById('driveFolderIdInput').value.trim();
             
             if (!title) {
                 toast('⚠️ Please enter a name', 'error');
                 return;
             }
-            if (!folderId) {
-                toast('⚠️ Please enter a Drive Folder ID', 'error');
+            if (!rawInput) {
+                toast('⚠️ Please enter a Drive Folder ID or link', 'error');
                 return;
+            }
+            
+            // Extract folder ID from full Google Drive URL if user pasted one
+            let folderId = rawInput;
+            const folderUrlMatch = rawInput.match(/drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]+)/);
+            if (folderUrlMatch) {
+                folderId = folderUrlMatch[1];
+            }
+            // Also handle drive.google.com/open?id= format
+            const openMatch = rawInput.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+            if (openMatch) {
+                folderId = openMatch[1];
             }
             
             const prof = profs.find(p => p.id === profId);
@@ -2809,16 +2835,25 @@
             
             try {
                 const url = `${DRIVE_PROXY_URL}?type=drive&folderId=${folderId}`;
+                console.log('📂 Loading drive folder:', folderId);
                 
                 const res = await fetch(url);
-                if (!res.ok) throw new Error('API error: ' + res.status);
+                if (!res.ok) throw new Error('Server error: ' + res.status + '. The folder may not be shared publicly.');
                 const data = await res.json();
+                
+                // Check for API-level errors
+                if (data.error) throw new Error(data.error);
+                
                 const files = data.files || [];
+                
+                console.log('📂 Drive API response:', files.length, 'files found');
                 
                 if (files.length === 0) {
                     content.innerHTML = `<div class="text-center py-12 text-slate-400">
                         <div style="font-size:2rem;">📂</div>
-                        <p class="mt-2 text-sm">This folder is empty</p>
+                        <p class="mt-2 text-sm">This folder is empty or not accessible.</p>
+                        <p class="mt-2 text-xs text-slate-300">Folder ID: ${folderId}</p>
+                        <p class="mt-1 text-xs text-slate-300">Make sure the Google Drive folder is shared as "Anyone with the link can view"</p>
                     </div>`;
                     return;
                 }
@@ -2881,11 +2916,16 @@
                 });
                 
             } catch (e) {
+                console.error('❌ Drive load error:', e);
                 content.innerHTML = `<div class="text-center py-12">
                     <div style="font-size:2rem;">⚠️</div>
                     <p class="text-slate-600 mt-2 text-sm font-medium">Could not load files</p>
                     <p class="text-slate-400 text-xs mt-1">${e.message}</p>
-                    <p class="text-slate-400 text-xs mt-1">Make sure the folder is shared as "Anyone with link can view"</p>
+                    <p class="text-slate-300 text-xs mt-2">Folder ID: ${folderId}</p>
+                    <p class="text-slate-400 text-xs mt-1">Make sure the Google Drive folder is shared as <b>"Anyone with the link can view"</b></p>
+                    <button onclick="loadDriveFolder('${folderId}')" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                        <i class="fas fa-sync-alt mr-1"></i> Retry
+                    </button>
                 </div>`;
             }
         }
@@ -2967,5 +3007,5 @@
             init();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1be995eec0f8476',t:'MTc4NDE3OTY2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1beb08aceee852c',t:'MTc4NDE4MDYwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
