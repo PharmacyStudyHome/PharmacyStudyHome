@@ -17,136 +17,31 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #f0f4f8;
-            min-height: 100vh;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f0f4f8; min-height: 100vh; }
         :root {
-            --primary: #0d9488;
-            --primary-dark: #0f766e;
-            --primary-light: #14b8a6;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #22c55e;
+            --primary: #0d9488; --primary-dark: #0f766e; --primary-light: #14b8a6;
+            --danger: #ef4444; --warning: #f59e0b; --success: #22c55e;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fade {
-            animation: fadeIn 0.3s ease forwards;
-        }
-        
-        .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .hero-gradient {
-            background: linear-gradient(135deg, #0d9488 0%, #0f766e 40%, #0f172a 100%);
-        }
-        
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(6px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .modal-overlay.active {
-            display: flex;
-        }
-        
-        .modal-box {
-            background: white;
-            border-radius: 24px;
-            max-width: 520px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 28px 24px;
-            animation: fadeIn 0.3s ease;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-        }
-        
-        #toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #1e293b;
-            color: white;
-            padding: 12px 28px;
-            border-radius: 16px;
-            font-size: 0.9rem;
-            z-index: 9999;
-            border: 1px solid #334155;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
-            opacity: 0;
-            pointer-events: none;
-            max-width: 90%;
-        }
-        
-        #toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.3s ease forwards; }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
+        .hero-gradient { background: linear-gradient(135deg, #0d9488 0%, #0f766e 40%, #0f172a 100%); }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: white; border-radius: 24px; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 28px 24px; animation: fadeIn 0.3s ease; box-shadow: 0 30px 60px rgba(0,0,0,0.3); }
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: white; padding: 12px 28px; border-radius: 16px; font-size: 0.9rem; z-index: 9999; border: 1px solid #334155; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s; opacity: 0; pointer-events: none; max-width: 90%; }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
         #toast.success { border-color: var(--success); }
         #toast.error { border-color: var(--danger); }
         #toast.warning { border-color: var(--warning); }
-        
-        .admin-controls {
-            display: none;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-        
-        .admin-controls.visible {
-            display: flex;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            color: #94a3b8;
-        }
-        
-        .empty-state .icon {
-            font-size: 3.5rem;
-            margin-bottom: 16px;
-            display: block;
-        }
-        
-        @media (max-width: 640px) {
-            .modal-box {
-                padding: 20px 16px;
-                margin: 10px;
-            }
-        }
+        .admin-controls { display: none; gap: 4px; flex-wrap: wrap; }
+        .admin-controls.visible { display: flex; }
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
+        .empty-state .icon { font-size: 3.5rem; margin-bottom: 16px; display: block; }
+        @media (max-width: 640px) { .modal-box { padding: 20px 16px; margin: 10px; } }
     </style>
 </head>
 <body>
@@ -176,24 +71,16 @@
                     </div>
                 </div>
                 <div class="hidden md:flex items-center gap-6">
-                    <button onclick="goHome()" class="font-medium text-slate-600 hover:text-teal-600 transition-colors text-sm">
-                        <i class="fas fa-home mr-1"></i> Home
-                    </button>
-                    <button onclick="toggleSearch()" class="font-medium text-slate-600 hover:text-teal-600 transition-colors text-sm">
-                        <i class="fas fa-search mr-1"></i> Search
-                    </button>
+                    <button onclick="goHome()" class="font-medium text-slate-600 hover:text-teal-600 transition-colors text-sm"><i class="fas fa-home mr-1"></i> Home</button>
+                    <button onclick="toggleSearch()" class="font-medium text-slate-600 hover:text-teal-600 transition-colors text-sm"><i class="fas fa-search mr-1"></i> Search</button>
                     <button onclick="toggleAdmin()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-xl font-semibold flex items-center gap-2 transition-all text-sm">
-                        <i class="fas fa-shield-alt"></i>
-                        <span id="adminBtnText">Admin</span>
+                        <i class="fas fa-shield-alt"></i><span id="adminBtnText">Admin</span>
                     </button>
                     <button id="changePassBtn" onclick="openChangePasswordModal()" class="admin-controls bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl font-semibold items-center gap-2 transition-all text-sm">
-                        <i class="fas fa-key"></i>
-                        <span>Change Password</span>
+                        <i class="fas fa-key"></i><span>Change Password</span>
                     </button>
                 </div>
-                <button onclick="toggleMobileMenu()" class="md:hidden text-2xl text-slate-600">
-                    <i class="fas fa-bars"></i>
-                </button>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-2xl text-slate-600"><i class="fas fa-bars"></i></button>
             </div>
         </div>
         <div id="mobileMenu" class="hidden md:hidden bg-white border-t">
@@ -227,34 +114,24 @@
                     <h1 id="welcomeTitle" class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">Welcome to Pharmacy Study Home!</h1>
                     <p id="welcomeText" class="text-base md:text-lg text-teal-100 max-w-2xl opacity-95">Your complete resource for pharmacy education.</p>
                     <div class="admin-controls mt-4">
-                        <button onclick="openWelcomeModal()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-sm font-semibold backdrop-blur-sm transition">
-                            <i class="fas fa-edit mr-1"></i> Edit Banner
-                        </button>
+                        <button onclick="openWelcomeModal()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-sm font-semibold backdrop-blur-sm transition"><i class="fas fa-edit mr-1"></i> Edit Banner</button>
                     </div>
                 </div>
             </div>
             
-            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-bolt text-teal-600"></i> Quick Access
-            </h2>
+            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-bolt text-teal-600"></i> Quick Access</h2>
             <div id="quickAccessGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8"></div>
             
-            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-graduation-cap text-teal-600"></i> Select Your Year
-            </h2>
+            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-graduation-cap text-teal-600"></i> Select Your Year</h2>
             <div id="profGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
             <div class="admin-controls mt-4">
-                <button onclick="openAddProfModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-2xl font-semibold transition text-sm flex items-center gap-2">
-                    <i class="fas fa-plus"></i> Add Prof Year
-                </button>
+                <button onclick="openAddProfModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-2xl font-semibold transition text-sm flex items-center gap-2"><i class="fas fa-plus"></i> Add Prof Year</button>
             </div>
         </div>
         
         <!-- PROF PAGE -->
         <div id="page-prof" class="page hidden animate-fade">
-            <button onclick="goHome()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm">
-                <i class="fas fa-arrow-left"></i> Back to Home
-            </button>
+            <button onclick="goHome()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm"><i class="fas fa-arrow-left"></i> Back to Home</button>
             <h2 id="profPageTitle" class="text-2xl font-bold text-slate-800 mb-6">Professional Year</h2>
             
             <div id="profDriveSection" style="display:none;" class="mb-6">
@@ -270,17 +147,13 @@
             
             <div id="profSubjectsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
             <div class="admin-controls mt-4">
-                <button onclick="openAddSubjectModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-2xl font-semibold transition text-sm flex items-center gap-2">
-                    <i class="fas fa-plus"></i> Add Subject
-                </button>
+                <button onclick="openAddSubjectModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-2xl font-semibold transition text-sm flex items-center gap-2"><i class="fas fa-plus"></i> Add Subject</button>
             </div>
         </div>
         
         <!-- SUBJECT PAGE -->
         <div id="page-subject" class="page hidden animate-fade">
-            <button onclick="goBackFromSubject()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
+            <button onclick="goBackFromSubject()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm"><i class="fas fa-arrow-left"></i> Back</button>
             <h2 id="subjectPageTitle" class="text-2xl font-bold text-slate-800 mb-6">Subject</h2>
             
             <div id="subjectDriveSection" style="display:none;" class="mb-6">
@@ -301,14 +174,10 @@
             </div>
             <div id="subjectContent" class="space-y-4"></div>
             <div class="admin-controls mt-4">
-                <button onclick="openAddResourceModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-2xl font-semibold transition text-sm flex items-center gap-2">
-                    <i class="fas fa-plus"></i> Add Resource
-                </button>
+                <button onclick="openAddResourceModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-2xl font-semibold transition text-sm flex items-center gap-2"><i class="fas fa-plus"></i> Add Resource</button>
             </div>
             <div class="mt-8 bg-amber-50 border border-amber-200 rounded-2xl p-5">
-                <h3 class="font-semibold text-amber-900 flex items-center gap-2 text-sm">
-                    <i class="fas fa-pen-clip text-amber-700"></i> My Personal Scratchpad
-                </h3>
+                <h3 class="font-semibold text-amber-900 flex items-center gap-2 text-sm"><i class="fas fa-pen-clip text-amber-700"></i> My Personal Scratchpad</h3>
                 <p class="text-xs text-amber-700 mt-1 mb-3">Auto-saved locally on your device.</p>
                 <textarea id="scratchpad" rows="4" class="w-full p-3 text-sm bg-white border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none" placeholder="Write your personal notes here..."></textarea>
                 <div class="text-[10px] text-amber-600 mt-2 text-right font-medium"><i class="fas fa-cloud-upload-alt"></i> Auto-saved</div>
@@ -317,18 +186,28 @@
         
         <!-- QUICK ACCESS PAGE -->
         <div id="page-quick" class="page hidden animate-fade">
-            <button onclick="goHome()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm">
-                <i class="fas fa-arrow-left"></i> Back to Home
-            </button>
+            <button onclick="goHome()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm"><i class="fas fa-arrow-left"></i> Back to Home</button>
             <div id="quickPageContent"></div>
+        </div>
+        
+        <!-- QUICK CATEGORY PAGE (Sheet view) -->
+        <div id="page-category" class="page hidden animate-fade">
+            <div class="flex items-center gap-3 mb-4">
+                <button onclick="goBackFromCategory()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium text-sm"><i class="fas fa-arrow-left"></i> Back</button>
+                <div id="categoryBreadcrumb" class="text-sm text-slate-500 truncate"></div>
+            </div>
+            <div id="categoryPageContent">
+                <div class="text-center py-12 text-slate-400">
+                    <div style="font-size:2rem;">📊</div>
+                    <p class="mt-2">Loading...</p>
+                </div>
+            </div>
         </div>
         
         <!-- DRIVE FILES PAGE -->
         <div id="page-drive" class="page hidden animate-fade">
             <div class="flex items-center gap-3 mb-4">
-                <button id="driveBackBtn" onclick="driveGoBack()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium text-sm">
-                    <i class="fas fa-arrow-left"></i> Back
-                </button>
+                <button id="driveBackBtn" onclick="driveGoBack()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium text-sm"><i class="fas fa-arrow-left"></i> Back</button>
                 <div id="driveBreadcrumb" class="text-sm text-slate-500 truncate"></div>
             </div>
             <div id="drivePageContent">
@@ -341,9 +220,7 @@
         
         <!-- ABOUT PAGE -->
         <div id="page-about" class="page hidden animate-fade">
-            <button onclick="goHome()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm">
-                <i class="fas fa-arrow-left"></i> Back to Home
-            </button>
+            <button onclick="goHome()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm"><i class="fas fa-arrow-left"></i> Back to Home</button>
             <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
                 <h2 class="text-2xl font-bold text-slate-800 mb-4"><i class="fas fa-info-circle text-teal-600"></i> About Pharmacy Study Home</h2>
                 <p class="text-slate-600 mb-4">Your all-in-one study companion for pharmacy students.</p>
@@ -393,7 +270,6 @@
             </div>
         </div>
     </div>
-
     <div id="profModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="profModalTitle" class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-graduation-cap text-teal-600"></i> Add Prof Year</h3>
@@ -491,6 +367,25 @@
         </div>
     </div>
     
+    <!-- CATEGORY MODAL (new) -->
+    <div id="categoryModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="catModalTitle" class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-layer-group text-teal-600"></i> Add Category</h3>
+            <input type="hidden" id="catEditId">
+            <input type="hidden" id="catParentQaId">
+            <input id="catTitleInput" type="text" placeholder="Category Title (e.g. Painkillers)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="catIconInput" type="text" placeholder="Icon Emoji (e.g. 💊)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="catSheetIdInput" type="text" placeholder="Google Sheet ID or full share link" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <p class="text-xs text-slate-400 mb-3">Paste the Sheet ID or full Google Sheets share link. Sheet must be shared as "Anyone with the link can view".</p>
+            <input id="catGidInput" type="text" placeholder="Sheet GID (optional, default 0)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <p class="text-xs text-slate-400 mb-4">Find GID in the URL after #gid= (leave blank for first sheet)</p>
+            <div class="flex gap-3">
+                <button onclick="saveCategory()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
+                <button onclick="closeModal('categoryModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
     <div id="tableEditorModal" class="modal-overlay">
         <div class="modal-box" style="max-width:95vw; width:600px;">
             <h3 class="text-xl font-bold text-slate-800 mb-1"><i class="fas fa-table text-teal-600"></i> Table Editor</h3>
@@ -514,7 +409,6 @@
             </div>
         </div>
     </div>
-
     <div id="sheetLinkModal" class="modal-overlay">
         <div class="modal-box">
             <h3 class="text-xl font-bold text-slate-800 mb-1"><i class="fab fa-google text-teal-600"></i> Link Google Sheet</h3>
@@ -527,9 +421,8 @@
             </div>
         </div>
     </div>
-
     </div> <!-- end #appContent -->
-
+    
     <!-- ═══════════════ FIREBASE + APP SCRIPT ═══════════════ -->
     <script>
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -606,6 +499,7 @@
         let quickContent = {};
         let quickSubItems = {};
         let quickTables = {};
+        let quickCategories = {};  // NEW: categories per QA button
         let welcomeContent = {};
         let isAdmin = false;
         let currentPage = 'home';
@@ -650,6 +544,7 @@
             quickContent = {};
             quickSubItems = {};
             quickTables = {};
+            quickCategories = {};
             welcomeContent = { ...DEFAULT_WELCOME };
         }
         
@@ -689,6 +584,16 @@
                 });
             }
             if (data.quickTables) quickTables = data.quickTables;
+            
+            // NEW: Load categories
+            if (data.quickCategories) {
+                quickCategories = {};
+                Object.keys(data.quickCategories).forEach(qaId => {
+                    const catData = data.quickCategories[qaId];
+                    quickCategories[qaId] = catData ? Object.values(catData) : [];
+                });
+            }
+            
             if (data.welcomeContent && data.welcomeContent.title && data.welcomeContent.title.length > 5) {
                 welcomeContent = data.welcomeContent;
             }
@@ -793,6 +698,7 @@
                 btn.innerHTML = `
                     <div class="text-4xl mb-2">${prof.icon || '📚'}</div>
                     <div class="font-bold text-slate-800">${prof.title}</div>
+                    ${prof.driveFolder ? '<div class="text-xs text-blue-500 mt-1">📁 Drive linked</div>' : ''}
                     <div class="admin-controls absolute top-1 right-1 gap-1">
                         <button onclick="event.stopPropagation();openEditProfModal('${prof.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
                         <button onclick="event.stopPropagation();deleteProf('${prof.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
@@ -822,6 +728,7 @@
                     btn.innerHTML = `
                         <div class="text-3xl mb-1">${sub.icon || '📖'}</div>
                         <div class="font-semibold text-slate-800">${sub.title}</div>
+                        ${sub.driveFolder ? '<div class="text-xs text-blue-500 mt-1">📁 Drive</div>' : ''}
                         <div class="admin-controls absolute top-1 right-1 gap-1">
                             <button onclick="event.stopPropagation();moveSubject('${sub.id}','${currentProfId}','up')" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
                             <button onclick="event.stopPropagation();moveSubject('${sub.id}','${currentProfId}','down')" ${idx === subList.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
@@ -834,6 +741,7 @@
                 });
             }
             
+            // Drive section for Prof
             const driveSectionEl = document.getElementById('profDriveSection');
             if (prof && prof.driveFolder) {
                 driveSectionEl.style.display = 'block';
@@ -916,12 +824,8 @@
                                         </div>
                                     </div>
                                     <div class="flex gap-2 items-center flex-wrap justify-end">
-                                        <button onclick="togglePreview('${item.id}', '${item.url || ''}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition">
-                                            <i class="fas fa-eye"></i> Preview
-                                        </button>
-                                        <a href="${item.url || '#'}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-xl text-sm font-semibold transition">
-                                            <i class="fas fa-download"></i> Download
-                                        </a>
+                                        <button onclick="togglePreview('${item.id}', '${item.url || ''}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-eye"></i> Preview</button>
+                                        <a href="${item.url || '#'}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-download"></i> Download</a>
                                         <div class="admin-controls gap-1">
                                             <button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
                                             <button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
@@ -948,9 +852,7 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-2 items-center">
-                                    <a href="${item.url || '#'}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
-                                        <i class="fas fa-external-link-alt"></i> Open
-                                    </a>
+                                    <a href="${item.url || '#'}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-external-link-alt"></i> Open</a>
                                     <div class="admin-controls gap-1">
                                         <button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
                                         <button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
@@ -967,19 +869,58 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ⭐ UPDATED: Render Quick Page
+        // ⭐ UPDATED: Render Quick Page with Categories
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function renderQuickPage() {
+            if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
+            
             const qaId = pageStack[pageStack.length - 1] || '';
             const item = quickAccess.find(q => q.id === qaId);
             
-            if (!item) { 
-                goHome(); 
-                return; 
-            }
+            if (!item) { goHome(); return; }
             
             const content = quickContent[qaId] || '';
             const subItems = quickSubItems[qaId] || [];
+            const categories = quickCategories[qaId] || [];
+            
+            // Build categories HTML
+            let categoriesHtml = '';
+            if (categories.length > 0 || isAdmin) {
+                let catCardsHtml = '';
+                categories.forEach((cat, catIdx) => {
+                    catCardsHtml += `
+                        <div class="bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-5 transition card-hover relative cursor-pointer group" onclick="navigateToCategory('${qaId}', '${cat.id}')">
+                            <div class="text-3xl mb-2">${cat.icon || '📊'}</div>
+                            <div class="font-semibold text-slate-800 text-sm">${cat.title}</div>
+                            ${cat.sheetId ? '<div class="text-xs text-blue-500 mt-1"><i class="fas fa-table"></i> Sheet linked</div>' : '<div class="text-xs text-amber-500 mt-1"><i class="fas fa-exclamation-circle"></i> No sheet</div>'}
+                            <div class="admin-controls absolute top-1 right-1 gap-1">
+                                <button onclick="event.stopPropagation();moveCategory('${qaId}','${cat.id}','up')" ${catIdx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
+                                <button onclick="event.stopPropagation();moveCategory('${qaId}','${cat.id}','down')" ${catIdx === categories.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
+                                <button onclick="event.stopPropagation();openEditCategoryModal('${qaId}','${cat.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
+                                <button onclick="event.stopPropagation();deleteCategory('${qaId}','${cat.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                categoriesHtml = `
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                            <h3 class="font-semibold text-slate-800 flex items-center gap-2">
+                                <i class="fas fa-layer-group text-teal-600"></i> Categories
+                            </h3>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            ${catCardsHtml}
+                        </div>
+                        <div class="admin-controls mt-3">
+                            <button onclick="openAddCategoryModal('${qaId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-2">
+                                <i class="fas fa-plus"></i> Add Category
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
             
             document.getElementById('quickPageContent').innerHTML = `
                 <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-3xl p-8 mb-6 relative">
@@ -1009,6 +950,8 @@
                     </button>
                 </div>` : ''}
                 
+                ${categoriesHtml}
+                
                 <div class="mb-6">
                     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
                         <h3 class="font-semibold text-slate-800">📊 Table</h3>
@@ -1027,14 +970,12 @@
                     </div>` : ''}
                     <div id="quickTableDisplay"></div>
                 </div>
-
                 <h3 class="font-semibold text-slate-800 mb-3">🔗 Links & Resources</h3>
                 <div id="quickSubItemsList" class="space-y-2"></div>
             `;
             
             const list = document.getElementById('quickSubItemsList');
             
-            if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
             if (item.sheetId) {
                 if (item.sheetMode === 'embed') {
                     loadEmbedSheet(item.sheetId, item.sheetGid);
@@ -1078,7 +1019,317 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ⭐ UPDATED: Load Live Sheet (Styled Data - FAST!)
+        // ⭐ NEW: Category Page (Sheet view)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function navigateToCategory(qaId, catId) {
+            pageStack.push({ type: 'category', qaId, catId });
+            renderCategoryPage(qaId, catId);
+            pushNavState();
+        }
+        
+        function goBackFromCategory() {
+            if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
+            history.back();
+        }
+        
+        function renderCategoryPage(qaId, catId) {
+            const categories = quickCategories[qaId] || [];
+            const cat = categories.find(c => c.id === catId);
+            
+            if (!cat) {
+                toast('❌ Category not found', 'error');
+                goHome();
+                return;
+            }
+            
+            const qaItem = quickAccess.find(q => q.id === qaId);
+            const qaTitle = qaItem ? qaItem.title : 'Quick Access';
+            
+            document.getElementById('categoryBreadcrumb').textContent = `${qaTitle} › ${cat.title}`;
+            
+            let sheetViewHtml = '';
+            if (cat.sheetId) {
+                sheetViewHtml = `
+                    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                        <div class="text-xs text-slate-400"><i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically</div>
+                        <div class="flex text-xs rounded-lg overflow-hidden border border-gray-200">
+                            <button onclick="setCategorySheetMode('${qaId}','${catId}','data')" id="catModeData-${catId}" class="px-3 py-1.5 font-semibold ${(!cat.sheetMode || cat.sheetMode==='data') ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Styled Data</button>
+                            <button onclick="setCategorySheetMode('${qaId}','${catId}','embed')" id="catModeEmbed-${catId}" class="px-3 py-1.5 font-semibold ${cat.sheetMode==='embed' ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Full Formatting</button>
+                        </div>
+                    </div>
+                    <div id="categorySheetDisplay"></div>
+                `;
+            } else {
+                sheetViewHtml = `
+                    <div class="text-center text-slate-400 py-8 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
+                        📊 No Google Sheet linked to this category yet.
+                        ${isAdmin ? '<br><br><button onclick="openEditCategoryModal(\'' + qaId + '\',\'' + catId + '\')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-link mr-1"></i> Link a Sheet</button>' : ''}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('categoryPageContent').innerHTML = `
+                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-3xl p-8 mb-6 relative">
+                    <div class="admin-controls absolute top-3 right-3 gap-1">
+                        <button onclick="openEditCategoryModal('${qaId}','${catId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl text-sm">✏️ Edit</button>
+                        <button onclick="deleteCategory('${qaId}','${catId}')" class="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-xl text-sm">🗑️ Delete</button>
+                    </div>
+                    <div class="text-5xl mb-3">${cat.icon || '📊'}</div>
+                    <h2 class="text-2xl font-bold">${cat.title}</h2>
+                    ${cat.sheetId ? '<p class="text-indigo-200 text-sm mt-1"><i class="fas fa-table mr-1"></i> Linked to Google Sheet</p>' : ''}
+                </div>
+                ${sheetViewHtml}
+            `;
+            
+            // Load the sheet
+            if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
+            
+            if (cat.sheetId) {
+                if (cat.sheetMode === 'embed') {
+                    loadCategorySheet(catId, cat.sheetId, cat.sheetGid);
+                } else {
+                    loadCategorySheet(catId, cat.sheetId, cat.sheetGid);
+                    liveSheetInterval = setInterval(() => loadCategorySheet(catId, cat.sheetId, cat.sheetGid), 30000);
+                }
+            }
+            
+            showPage('category');
+        }
+        
+        async function loadCategorySheet(catId, sheetId, gid) {
+            const el = document.getElementById('categorySheetDisplay');
+            if (!el) return;
+            
+            el.innerHTML = `<div class="text-center py-8 text-slate-400">
+                <div style="width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#0d9488;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
+                <p class="text-sm">Loading sheet data...</p>
+            </div>`;
+            
+            try {
+                const workerUrl = `${DRIVE_PROXY_URL}?type=sheet-data&sheetId=${sheetId}&sheetName=Sheet1`;
+                const response = await fetch(workerUrl);
+                
+                if (!response.ok) throw new Error(`Worker error: ${response.status}`);
+                
+                const result = await response.json();
+                if (result.error) throw new Error(result.error);
+                
+                if (result.success && result.data) {
+                    const tableHtml = parseSheetDataToHtml(result.data);
+                    el.innerHTML = `
+                        <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:auto;max-height:650px;background:white;">
+                            ${tableHtml}
+                        </div>
+                        <div class="text-xs text-slate-400 mt-2 text-center">
+                            <i class="fas fa-sync-alt"></i> Auto-updates from Google Sheets
+                        </div>`;
+                } else {
+                    throw new Error('Invalid response from Worker');
+                }
+            } catch (e) {
+                el.innerHTML = `
+                    <div class="text-center text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
+                        ⚠️ Could not load sheet data.<br>
+                        <span class="text-xs">${e.message}</span><br><br>
+                        <button onclick="loadCategorySheetEmbed('${catId}','${sheetId}','${gid || '0'}')" 
+                                class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                            <i class="fas fa-eye"></i> Switch to Full Formatting
+                        </button>
+                        <button onclick="loadCategorySheet('${catId}','${sheetId}','${gid || '0'}')" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>`;
+            }
+        }
+        
+        function loadCategorySheetEmbed(catId, sheetId, gid) {
+            const el = document.getElementById('categorySheetDisplay');
+            if (!el) return;
+            
+            const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal&widget=false&headers=false&chrome=false&gid=${gid || '0'}`;
+            
+            el.innerHTML = `
+                <div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;background:white;width:100%;">
+                    <iframe src="${embedUrl}" style="width:100%;height:600px;border:none;display:block;" allowfullscreen loading="lazy"></iframe>
+                </div>
+                <div class="text-xs text-slate-400 mt-2 text-center">
+                    <i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically
+                </div>`;
+        }
+        
+        async function setCategorySheetMode(qaId, catId, mode) {
+            const categories = quickCategories[qaId] || [];
+            const cat = categories.find(c => c.id === catId);
+            if (!cat) return;
+            
+            cat.sheetMode = mode;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickCategories/' + qaId + '/' + catId + '/sheetMode').set(mode);
+                }
+                
+                // Re-render category page
+                renderCategoryPage(qaId, catId);
+            } catch (e) {
+                toast('❌ Could not switch view', 'error');
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ⭐ NEW: Category CRUD
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openAddCategoryModal(parentQaId) {
+            document.getElementById('catModalTitle').textContent = 'Add Category';
+            document.getElementById('catEditId').value = '';
+            document.getElementById('catParentQaId').value = parentQaId;
+            document.getElementById('catTitleInput').value = '';
+            document.getElementById('catIconInput').value = '';
+            document.getElementById('catSheetIdInput').value = '';
+            document.getElementById('catGidInput').value = '';
+            openModal('categoryModal');
+        }
+        
+        function openEditCategoryModal(parentQaId, catId) {
+            const categories = quickCategories[parentQaId] || [];
+            const cat = categories.find(c => c.id === catId);
+            if (!cat) return;
+            
+            document.getElementById('catModalTitle').textContent = 'Edit Category';
+            document.getElementById('catEditId').value = catId;
+            document.getElementById('catParentQaId').value = parentQaId;
+            document.getElementById('catTitleInput').value = cat.title || '';
+            document.getElementById('catIconInput').value = cat.icon || '';
+            
+            // Show full sheet URL or just ID
+            if (cat.sheetId) {
+                document.getElementById('catSheetIdInput').value = cat.sheetId;
+            } else {
+                document.getElementById('catSheetIdInput').value = '';
+            }
+            document.getElementById('catGidInput').value = cat.sheetGid || '';
+            openModal('categoryModal');
+        }
+        
+        async function saveCategory() {
+            const id = document.getElementById('catEditId').value;
+            const parentQaId = document.getElementById('catParentQaId').value;
+            const title = document.getElementById('catTitleInput').value.trim();
+            const icon = document.getElementById('catIconInput').value.trim() || '📊';
+            const rawSheetInput = document.getElementById('catSheetIdInput').value.trim();
+            const gid = document.getElementById('catGidInput').value.trim() || '0';
+            
+            if (!title || !parentQaId) {
+                toast('⚠️ Please enter a title', 'error');
+                return;
+            }
+            
+            // Extract sheet ID from full URL or use as-is
+            let sheetId = '';
+            if (rawSheetInput) {
+                const idMatch = rawSheetInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                sheetId = idMatch ? idMatch[1] : rawSheetInput;
+            }
+            
+            const catData = {
+                id: id || 'cat_' + Date.now(),
+                title,
+                icon,
+                sheetId,
+                sheetGid: gid,
+                order: id ? ((quickCategories[parentQaId] || []).find(c => c.id === id)?.order ?? 0) : (quickCategories[parentQaId] || []).length
+            };
+            
+            // Preserve existing sheetMode if editing
+            if (id) {
+                const existing = (quickCategories[parentQaId] || []).find(c => c.id === id);
+                if (existing && existing.sheetMode) catData.sheetMode = existing.sheetMode;
+            }
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickCategories/' + parentQaId + '/' + catData.id).set(catData);
+                }
+                
+                if (!quickCategories[parentQaId]) quickCategories[parentQaId] = [];
+                
+                if (id) {
+                    const idx = quickCategories[parentQaId].findIndex(c => c.id === id);
+                    if (idx !== -1) quickCategories[parentQaId][idx] = catData;
+                } else {
+                    quickCategories[parentQaId].push(catData);
+                }
+                
+                saveToLocalStorage();
+                closeModal('categoryModal');
+                
+                // Re-render current page
+                if (currentPage === 'quick') {
+                    renderQuickPage();
+                } else if (currentPage === 'category') {
+                    // If we're on category page, go back to quick page
+                    renderQuickPage();
+                }
+                
+                toast(id ? '✅ Category updated!' : '✅ Category added!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        async function deleteCategory(parentQaId, catId) {
+            if (!confirm('🗑️ Delete this category?')) return;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickCategories/' + parentQaId + '/' + catId).remove();
+                }
+                
+                if (quickCategories[parentQaId]) {
+                    quickCategories[parentQaId] = quickCategories[parentQaId].filter(c => c.id !== catId);
+                }
+                
+                saveToLocalStorage();
+                
+                // If on category page for this category, go back
+                if (currentPage === 'category') {
+                    renderQuickPage();
+                } else {
+                    renderQuickPage();
+                }
+                
+                toast('🗑️ Category deleted!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        async function moveCategory(parentQaId, catId, direction) {
+            const list = quickCategories[parentQaId];
+            if (!list) return;
+            const idx = list.findIndex(c => c.id === catId);
+            if (idx === -1) return;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= list.length) return;
+            
+            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+            list.forEach((item, i) => item.order = i);
+            
+            try {
+                if (firebaseReady) {
+                    const updates = {};
+                    list.forEach(item => { updates['quickCategories/' + parentQaId + '/' + item.id + '/order'] = item.order; });
+                    await db.ref().update(updates);
+                }
+                renderQuickPage();
+            } catch (e) {
+                toast('❌ Could not save new order', 'error');
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ⭐ Load Live Sheet (Styled Data - FAST!)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         async function loadLiveSheet(sheetId, gid) {
             const el = document.getElementById('quickTableDisplay');
@@ -1090,25 +1341,16 @@
             </div>`;
             
             try {
-                // Fetch data from Worker (FAST!)
                 const workerUrl = `${DRIVE_PROXY_URL}?type=sheet-data&sheetId=${sheetId}&sheetName=Sheet1`;
-                
                 const response = await fetch(workerUrl);
                 
-                if (!response.ok) {
-                    throw new Error(`Worker error: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Worker error: ${response.status}`);
                 
                 const result = await response.json();
-                
-                if (result.error) {
-                    throw new Error(result.error);
-                }
+                if (result.error) throw new Error(result.error);
                 
                 if (result.success && result.data) {
-                    // Parse with auto-formatting (FAST + looks good!)
                     const tableHtml = parseSheetDataToHtml(result.data);
-                    
                     el.innerHTML = `
                         <div style="border-radius:12px;border:1px solid #e2e8f0;overflow:auto;max-height:650px;background:white;">
                             ${tableHtml}
@@ -1138,13 +1380,12 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ⭐ UPDATED: Load Embed Sheet (Full Formatting)
+        // ⭐ Load Embed Sheet (Full Formatting)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function loadEmbedSheet(sheetId, gid) {
             const el = document.getElementById('quickTableDisplay');
             if (!el) return;
             
-            // ⭐ FULL FORMATTING - Shows everything exactly as in Google Sheets
             const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal&widget=false&headers=false&chrome=false&gid=${gid || '0'}`;
             
             el.innerHTML = `
@@ -1158,12 +1399,11 @@
                 </div>
                 <div class="text-xs text-slate-400 mt-2 text-center">
                     <i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically
-                </div>
-            `;
+                </div>`;
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ⭐ UPDATED: Parse Sheet Data to HTML (Auto-Formatting)
+        // ⭐ Parse Sheet Data to HTML (Auto-Formatting)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function parseSheetDataToHtml(data) {
             if (!data || !data.values || data.values.length === 0) {
@@ -1171,16 +1411,11 @@
             }
             
             const rows = data.values;
-            
             let html = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
             
             rows.forEach((row, rowIndex) => {
                 html += '<tr>';
-                
-                // First 2 rows = Headers (bold, teal background)
                 const isHeader = rowIndex === 0 || rowIndex === 1;
-                
-                // Find max columns
                 const maxCols = Math.max(...rows.map(r => r.length));
                 
                 for (let colIndex = 0; colIndex < maxCols; colIndex++) {
@@ -1188,19 +1423,16 @@
                     let style = 'padding:10px 12px;border:1px solid #e2e8f0;';
                     let displayText = cell;
                     
-                    // ⭐ AUTO-FORMATTING: Make first column bold (drug names)
                     if (colIndex === 0 && rowIndex > 1) {
                         style += 'font-weight:bold;';
                     }
                     
-                    // ⭐ AUTO-FORMATTING: Headers
                     if (isHeader) {
                         style += 'font-weight:bold;background:#0d9488;color:white;';
                     } else if (rowIndex % 2 === 1) {
                         style += 'background:#f8fafc;';
                     }
                     
-                    // ⭐ AUTO-FORMATTING: Detect bold markers in text
                     if (typeof cell === 'string') {
                         if (cell.startsWith('**') && cell.endsWith('**')) {
                             style += 'font-weight:bold;';
@@ -1249,6 +1481,15 @@
                     renderSubjectPage();
                 } else if (currentPage === 'quick') {
                     renderQuickPage();
+                } else if (currentPage === 'category') {
+                    // Re-render category page from stack
+                    const lastEntry = pageStack[pageStack.length - 1];
+                    if (lastEntry && lastEntry.type === 'category') {
+                        renderCategoryPage(lastEntry.qaId, lastEntry.catId);
+                    } else {
+                        renderHome();
+                        showPage('home');
+                    }
                 } else if (currentPage === 'drive') {
                     showPage('drive');
                     if (driveStack.length > 0) {
@@ -1270,7 +1511,7 @@
         });
         
         function showPage(page) {
-            if (page !== 'quick' && liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
+            if (page !== 'quick' && page !== 'category' && liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
             document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById('page-' + page);
             if (target) {
@@ -1282,6 +1523,7 @@
         }
         
         function goHome() {
+            if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
             pageStack = [];
             currentProfId = null;
             currentSubjectId = null;
@@ -1405,6 +1647,19 @@
                         action: `navigateToQuick('${qa.id}')` 
                     });
                 }
+                
+                // Also search categories
+                const cats = quickCategories[qa.id] || [];
+                cats.forEach(cat => {
+                    if (cat.title.toLowerCase().includes(q)) {
+                        matches.push({
+                            type: 'Category',
+                            title: cat.title,
+                            desc: qa.title,
+                            action: `navigateToCategory('${qa.id}','${cat.id}')`
+                        });
+                    }
+                });
             });
             
             if (matches.length === 0) {
@@ -1830,14 +2085,8 @@
                 title: title
             };
             
-            if (type === 'note') {
-                resData.content = content || '';
-            }
-            
-            if (type === 'link') {
-                resData.url = url || '';
-            }
-            
+            if (type === 'note') resData.content = content || '';
+            if (type === 'link') resData.url = url || '';
             if (type === 'file') {
                 resData.url = url || '';
                 resData.fileType = fileType || '';
@@ -1961,12 +2210,14 @@
                     await db.ref('quickContent/' + id).remove();
                     await db.ref('quickSubItems/' + id).remove();
                     await db.ref('quickTables/' + id).remove();
+                    await db.ref('quickCategories/' + id).remove();  // NEW
                 }
                 
                 quickAccess = quickAccess.filter(q => q.id !== id);
                 delete quickContent[id];
                 delete quickSubItems[id];
                 delete quickTables[id];
+                delete quickCategories[id];  // NEW
                 
                 saveToLocalStorage();
                 renderHome();
@@ -2124,7 +2375,6 @@
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function openSheetLinkModal(qaId) {
             document.getElementById('sheetLinkQaId').value = qaId;
-            const item = quickAccess.find(q => q.id === qaId);
             document.getElementById('sheetLinkInput').value = '';
             openModal('sheetLinkModal');
         }
@@ -2192,15 +2442,6 @@
             }
         }
         
-        function loadEmbedSheet(sheetId, gid) {
-            const el = document.getElementById('quickTableDisplay');
-            if (!el) return;
-            const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal&widget=false&headers=false&gid=${gid || '0'}`;
-            el.innerHTML = `<div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
-                <iframe src="${embedUrl}" style="width:100%;height:70vh;border:none;display:block;" allowfullscreen></iframe>
-            </div>`;
-        }
-        
         function openTableEditorModal(qaId) {
             document.getElementById('tableEditorQaId').value = qaId;
             const saved = quickTables[qaId];
@@ -2215,7 +2456,6 @@
         
         function renderEditorGrid() {
             const grid = document.getElementById('tableEditorGrid');
-            const cols = editorState.headers.length;
             
             const headCells = editorState.headers.map((h, ci) =>
                 `<td class="table-editor-cell table-editor-head"><input value="${h.replace(/"/g,'&quot;')}" placeholder="Header ${ci+1}" onchange="editorState.headers[${ci}]=this.value"></td>`
@@ -2278,13 +2518,9 @@
         function getEmbedUrl(url) {
             if (!url) return null;
             const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-            if (driveMatch) {
-                return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
-            }
+            if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
             const openMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
-            if (openMatch) {
-                return `https://drive.google.com/file/d/${openMatch[1]}/preview`;
-            }
+            if (openMatch) return `https://drive.google.com/file/d/${openMatch[1]}/preview`;
             return url;
         }
         
