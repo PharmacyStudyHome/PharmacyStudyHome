@@ -1515,41 +1515,31 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // HIDE EMPTY TABLES (viewer mode)
+        // HIDE EMPTY SECTIONS (viewer mode only)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function hideEmptyTables() {
             if (isAdmin) return;
             
-            // Hide empty quick table display
+            // Hide empty quick table section (no table data at all)
             const qtd = document.getElementById('quickTableDisplay');
             if (qtd) {
-                const hasContent = qtd.querySelector('table');
-                if (!hasContent) {
+                const hasTable = qtd.querySelector('table');
+                const hasEmptyMsg = qtd.textContent.includes('No table');
+                if (!hasTable && hasEmptyMsg) {
                     const section = qtd.closest('.mb-6');
                     if (section) section.style.display = 'none';
                 }
             }
             
-            // Hide empty category sheet section
-            const catSection = document.getElementById('catSheetSection');
-            if (catSection) {
-                const csd = document.getElementById('categorySheetDisplay');
-                if (csd) {
-                    const hasContent = csd.querySelector('table');
-                    if (!hasContent) catSection.style.display = 'none';
-                }
-                // Also hide if it shows "No Google Sheet linked"
-                if (catSection.textContent.includes('No Google Sheet linked')) {
-                    catSection.style.display = 'none';
-                }
-            }
-            
-            // Hide empty quick sub-items list
+            // Hide empty "Links & Resources" heading and list in viewer mode
             const qsList = document.getElementById('quickSubItemsList');
-            if (qsList && qsList.children.length === 0) {
-                const prevH3 = qsList.previousElementSibling;
-                if (prevH3 && prevH3.tagName === 'H3') prevH3.style.display = 'none';
-                qsList.style.display = 'none';
+            if (qsList) {
+                const hasItems = qsList.querySelector('.bg-white.rounded-2xl');
+                if (!hasItems) {
+                    const heading = qsList.previousElementSibling;
+                    if (heading && heading.tagName === 'H3') heading.style.display = 'none';
+                    qsList.style.display = 'none';
+                }
             }
         }
         
@@ -3135,5 +3125,5 @@
             init();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1bfeaa3dadcce25',t:'MTc4NDE5MzQ3NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c00e5c3fcf6596',t:'MTc4NDE5NDkzOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
