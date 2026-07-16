@@ -42,6 +42,41 @@
         .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
         .empty-state .icon { font-size: 3.5rem; margin-bottom: 16px; display: block; }
         @media (max-width: 640px) { .modal-box { padding: 20px 16px; margin: 10px; } }
+
+        /* Drive Folder Card */
+        .drive-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #93c5fd;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+        .drive-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -5px rgba(59,130,246,0.15), 0 8px 10px -6px rgba(59,130,246,0.1);
+            border-color: #3b82f6;
+        }
+        .drive-card .drive-icon-wrap {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+        }
+        .drive-file-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        .drive-file-card:hover {
+            box-shadow: 0 8px 16px rgba(59,130,246,0.1);
+        }
     </style>
 </head>
 <body>
@@ -146,8 +181,9 @@
             </div>
             
             <div id="profSubjectsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-            <div class="admin-controls mt-4">
+            <div class="admin-controls mt-4 gap-3 flex-wrap">
                 <button onclick="openAddSubjectModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-2xl font-semibold transition text-sm flex items-center gap-2"><i class="fas fa-plus"></i> Add Subject</button>
+                <button onclick="openAddDriveFolderModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-semibold transition text-sm flex items-center gap-2"><i class="fab fa-google-drive"></i> Add Drive Folder</button>
             </div>
         </div>
         
@@ -297,6 +333,23 @@
             <div class="flex gap-3">
                 <button onclick="saveSubject()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('subjectModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- DRIVE FOLDER MODAL -->
+    <div id="driveFolderModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="driveFolderModalTitle" class="text-xl font-bold text-slate-800 mb-4"><i class="fab fa-google-drive text-blue-600"></i> Add Drive Folder</h3>
+            <input type="hidden" id="driveFolderEditId">
+            <input type="hidden" id="driveFolderProfId">
+            <input id="driveFolderNameInput" type="text" placeholder="Folder Name (e.g. Past Papers, Lab Manuals)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input id="driveFolderIconInput" type="text" placeholder="Icon Emoji (e.g. 📁)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input id="driveFolderIdInput" type="text" placeholder="Google Drive Folder ID" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <p class="text-xs text-slate-400 mb-4">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
+            <div class="flex gap-3">
+                <button onclick="saveDriveFolder()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
+                <button onclick="closeModal('driveFolderModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
             </div>
         </div>
     </div>
@@ -719,9 +772,44 @@
             const subList = subjects[currentProfId] || [];
             subList.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
             
-            if (subList.length === 0) {
-                grid.innerHTML = `<div class="col-span-full empty-state"><span class="icon">📭</span>No subjects yet.</div>`;
+            // Get drive folders for this prof
+            const driveFolders = (prof && prof.driveFolders) ? prof.driveFolders : [];
+            driveFolders.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            
+            // Hide the old top-level drive section — drive folders are now inline cards
+            document.getElementById('profDriveSection').style.display = 'none';
+            
+            if (subList.length === 0 && driveFolders.length === 0) {
+                grid.innerHTML = `<div class="col-span-full empty-state"><span class="icon">📭</span>No subjects or drive folders yet.</div>`;
             } else {
+                // Render Drive Folder cards first (blue theme)
+                driveFolders.forEach((df, dfIdx) => {
+                    const card = document.createElement('div');
+                    card.className = 'drive-card relative';
+                    card.innerHTML = `
+                        <div class="drive-icon-wrap">
+                            <span style="font-size:1.5rem;">${df.icon || '📁'}</span>
+                        </div>
+                        <div class="font-bold text-blue-800 text-sm">${df.title}</div>
+                        <div class="text-xs text-blue-500 mt-1"><i class="fab fa-google-drive"></i> Google Drive</div>
+                        <div class="admin-controls absolute top-1 right-1 gap-1">
+                            <button onclick="event.stopPropagation();moveDriveFolder('${currentProfId}','${df.id}','up')" ${dfIdx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
+                            <button onclick="event.stopPropagation();moveDriveFolder('${currentProfId}','${df.id}','down')" ${dfIdx === driveFolders.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
+                            <button onclick="event.stopPropagation();openEditDriveFolderModal('${currentProfId}','${df.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button>
+                            <button onclick="event.stopPropagation();deleteDriveFolder('${currentProfId}','${df.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button>
+                        </div>
+                    `;
+                    card.onclick = () => {
+                        driveStack = [{ id: df.folderId, name: df.title }];
+                        showPage('drive');
+                        updateDriveBreadcrumb();
+                        loadDriveFolder(df.folderId);
+                        pushNavState();
+                    };
+                    grid.appendChild(card);
+                });
+                
+                // Render Subject cards (teal theme)
                 subList.forEach((sub, idx) => {
                     const btn = document.createElement('button');
                     btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-5 text-center transition card-hover relative';
@@ -739,21 +827,6 @@
                     btn.onclick = () => navigateToSubject(sub.id);
                     grid.appendChild(btn);
                 });
-            }
-            
-            // Drive section for Prof
-            const driveSectionEl = document.getElementById('profDriveSection');
-            if (prof && prof.driveFolder) {
-                driveSectionEl.style.display = 'block';
-                document.getElementById('profDriveBtn').onclick = () => {
-                    driveStack = [{ id: prof.driveFolder, name: prof.title + ' Files' }];
-                    showPage('drive');
-                    updateDriveBreadcrumb();
-                    loadDriveFolder(prof.driveFolder);
-                    pushNavState();
-                };
-            } else {
-                driveSectionEl.style.display = 'none';
             }
             
             showPage('prof');
@@ -2024,6 +2097,128 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // DRIVE FOLDER CRUD (per Prof)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openAddDriveFolderModal() {
+            document.getElementById('driveFolderModalTitle').textContent = 'Add Drive Folder';
+            document.getElementById('driveFolderEditId').value = '';
+            document.getElementById('driveFolderProfId').value = currentProfId || '';
+            document.getElementById('driveFolderNameInput').value = '';
+            document.getElementById('driveFolderIconInput').value = '';
+            document.getElementById('driveFolderIdInput').value = '';
+            openModal('driveFolderModal');
+        }
+        
+        function openEditDriveFolderModal(profId, dfId) {
+            const prof = profs.find(p => p.id === profId);
+            if (!prof || !prof.driveFolders) return;
+            const df = prof.driveFolders.find(d => d.id === dfId);
+            if (!df) return;
+            
+            document.getElementById('driveFolderModalTitle').textContent = 'Edit Drive Folder';
+            document.getElementById('driveFolderEditId').value = dfId;
+            document.getElementById('driveFolderProfId').value = profId;
+            document.getElementById('driveFolderNameInput').value = df.title || '';
+            document.getElementById('driveFolderIconInput').value = df.icon || '';
+            document.getElementById('driveFolderIdInput').value = df.folderId || '';
+            openModal('driveFolderModal');
+        }
+        
+        async function saveDriveFolder() {
+            const id = document.getElementById('driveFolderEditId').value;
+            const profId = document.getElementById('driveFolderProfId').value;
+            const title = document.getElementById('driveFolderNameInput').value.trim();
+            const icon = document.getElementById('driveFolderIconInput').value.trim() || '📁';
+            const folderId = document.getElementById('driveFolderIdInput').value.trim();
+            
+            if (!title) {
+                toast('⚠️ Please enter a name', 'error');
+                return;
+            }
+            if (!folderId) {
+                toast('⚠️ Please enter a Drive Folder ID', 'error');
+                return;
+            }
+            
+            const prof = profs.find(p => p.id === profId);
+            if (!prof) return;
+            if (!prof.driveFolders) prof.driveFolders = [];
+            
+            const dfData = {
+                id: id || 'df_' + Date.now(),
+                title,
+                icon,
+                folderId,
+                order: id ? ((prof.driveFolders.find(d => d.id === id)?.order) ?? 0) : prof.driveFolders.length
+            };
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('profs/' + profId + '/driveFolders/' + dfData.id).set(dfData);
+                }
+                
+                if (id) {
+                    const idx = prof.driveFolders.findIndex(d => d.id === id);
+                    if (idx !== -1) prof.driveFolders[idx] = dfData;
+                } else {
+                    prof.driveFolders.push(dfData);
+                }
+                
+                saveToLocalStorage();
+                closeModal('driveFolderModal');
+                renderProfPage();
+                toast(id ? '✅ Drive folder updated!' : '✅ Drive folder added!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        async function deleteDriveFolder(profId, dfId) {
+            if (!confirm('🗑️ Delete this Drive Folder button?')) return;
+            
+            try {
+                if (firebaseReady) {
+                    await db.ref('profs/' + profId + '/driveFolders/' + dfId).remove();
+                }
+                
+                const prof = profs.find(p => p.id === profId);
+                if (prof && prof.driveFolders) {
+                    prof.driveFolders = prof.driveFolders.filter(d => d.id !== dfId);
+                }
+                
+                saveToLocalStorage();
+                renderProfPage();
+                toast('🗑️ Drive folder deleted!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        async function moveDriveFolder(profId, dfId, direction) {
+            const prof = profs.find(p => p.id === profId);
+            if (!prof || !prof.driveFolders) return;
+            const list = prof.driveFolders;
+            const idx = list.findIndex(d => d.id === dfId);
+            if (idx === -1) return;
+            const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (targetIdx < 0 || targetIdx >= list.length) return;
+            
+            [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+            list.forEach((item, i) => item.order = i);
+            
+            try {
+                if (firebaseReady) {
+                    const updates = {};
+                    list.forEach(item => { updates['profs/' + profId + '/driveFolders/' + item.id + '/order'] = item.order; });
+                    await db.ref().update(updates);
+                }
+                renderProfPage();
+            } catch (e) {
+                toast('❌ Could not save new order', 'error');
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // RESOURCE CRUD
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function openAddResourceModal() {
@@ -2772,5 +2967,5 @@
             init();
         });
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1be995eec0f8476',t:'MTc4NDE3OTY2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
