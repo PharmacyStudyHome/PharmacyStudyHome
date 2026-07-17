@@ -478,6 +478,40 @@
         </div>
     </div>
     
+    <!-- SUB-CATEGORY MODAL -->
+    <div id="subCategoryModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="subCatModalTitle" class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-sitemap text-teal-600"></i> Add Sub-Category</h3>
+            <input type="hidden" id="subCatEditId">
+            <input type="hidden" id="subCatParentQaId">
+            <input type="hidden" id="subCatParentCatId">
+            <input id="subCatTitleInput" type="text" placeholder="Sub-Category Title (e.g. Paracetamol)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="subCatIconInput" type="text" placeholder="Icon Emoji (e.g. 💊)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="subCatSheetIdInput" type="text" placeholder="Google Sheet ID or full share link" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <p class="text-xs text-slate-400 mb-3">Paste the Sheet ID or full Google Sheets share link. Sheet must be shared as "Anyone with the link can view".</p>
+            <input id="subCatGidInput" type="text" placeholder="Sheet GID (optional, default 0)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <p class="text-xs text-slate-400 mb-4">Find GID in the URL after #gid= (leave blank for first sheet)</p>
+            <div class="flex gap-3">
+                <button onclick="saveSubCategory()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
+                <button onclick="closeModal('subCategoryModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SUB-CATEGORY SHEET PAGE -->
+    <div id="page-subcategory" class="page hidden animate-fade">
+        <div class="flex items-center gap-3 mb-4">
+            <button onclick="goBackFromSubCategory()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium text-sm"><i class="fas fa-arrow-left"></i> Back</button>
+            <div id="subCategoryBreadcrumb" class="text-sm text-slate-500 truncate"></div>
+        </div>
+        <div id="subCategoryPageContent">
+            <div class="text-center py-12 text-slate-400">
+                <div style="font-size:2rem;">📊</div>
+                <p class="mt-2">Loading...</p>
+            </div>
+        </div>
+    </div>
+    
     <div id="tableEditorModal" class="modal-overlay">
         <div class="modal-box" style="max-width:95vw; width:600px;">
             <h3 class="text-xl font-bold text-slate-800 mb-1"><i class="fas fa-table text-teal-600"></i> Table Editor</h3>
@@ -591,7 +625,8 @@
         let quickContent = {};
         let quickSubItems = {};
         let quickTables = {};
-        let quickCategories = {};  // NEW: categories per QA button
+        let quickCategories = {};  // categories per QA button
+        let quickSubCategories = {}; // sub-categories per category
         let welcomeContent = {};
         let isAdmin = false;
         let currentPage = 'home';
@@ -709,12 +744,21 @@
             }
             if (data.quickTables) quickTables = data.quickTables;
             
-            // NEW: Load categories
+            // Load categories
             if (data.quickCategories) {
                 quickCategories = {};
                 Object.keys(data.quickCategories).forEach(qaId => {
                     const catData = data.quickCategories[qaId];
                     quickCategories[qaId] = catData ? Object.values(catData) : [];
+                });
+            }
+            
+            // Load sub-categories
+            if (data.quickSubCategories) {
+                quickSubCategories = {};
+                Object.keys(data.quickSubCategories).forEach(catId => {
+                    const subData = data.quickSubCategories[catId];
+                    quickSubCategories[catId] = subData ? Object.values(subData) : [];
                 });
             }
             
@@ -1096,13 +1140,7 @@
                             ${isAdmin && !item.sheetId ? `<button onclick="openTableEditorModal('${qaId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-sm font-semibold transition">✏️ Edit Table</button>` : ''}
                         </div>
                     </div>
-                    ${item.sheetId ? `<div class="flex items-center justify-between mb-2 flex-wrap gap-2">
-                        <div class="text-xs text-slate-400"><i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically</div>
-                        <div class="flex text-xs rounded-lg overflow-hidden border border-gray-200">
-                            <button onclick="setSheetMode('${qaId}','data')" class="px-3 py-1.5 font-semibold ${(!item.sheetMode || item.sheetMode==='data') ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Styled Data</button>
-                            <button onclick="setSheetMode('${qaId}','embed')" class="px-3 py-1.5 font-semibold ${item.sheetMode==='embed' ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Full Formatting</button>
-                        </div>
-                    </div>` : ''}
+                    ${item.sheetId ? `<div class="text-xs text-slate-400 mb-2"><i class="fas fa-sync-alt"></i> Live from Google Sheets</div>` : ''}
                     <div id="quickTableDisplay"></div>
                 </div>
                 <h3 class="font-semibold text-slate-800 mb-3">🔗 Links & Resources</h3>
@@ -1112,11 +1150,7 @@
             const list = document.getElementById('quickSubItemsList');
             
             if (item.sheetId) {
-                if (item.sheetMode === 'embed') {
-                    loadEmbedSheet(item.sheetId, item.sheetGid);
-                } else {
-                    loadLiveSheet(item.sheetId, item.sheetGid);
-                }
+                loadLiveSheet(item.sheetId, item.sheetGid);
             } else {
                 renderQuickTable(qaId);
             }
@@ -1185,6 +1219,35 @@
             document.getElementById('categoryBreadcrumb').textContent = `${qaTitle} › ${cat.title}`;
             
             let sheetViewHtml = '';
+            const subCats = quickSubCategories[catId] || [];
+            subCats.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            
+            // Sub-categories section
+            let subCatsHtml = '';
+            if (subCats.length > 0 || isAdmin) {
+                let subCards = '';
+                subCats.forEach((sc, scIdx) => {
+                    subCards += `
+                        <div class="bg-white hover:bg-indigo-50 border border-indigo-200 rounded-2xl p-4 transition card-hover relative cursor-pointer" onclick="navigateToSubCategory('${qaId}','${catId}','${sc.id}')">
+                            <div class="text-2xl mb-1">${sc.icon || '📋'}</div>
+                            <div class="font-semibold text-slate-800 text-xs">${sc.title}</div>
+                            ${sc.sheetId ? '<div class="text-xs text-blue-500 mt-1"><i class="fas fa-table"></i> Sheet</div>' : ''}
+                            <div class="admin-controls absolute top-1 right-1 gap-1">
+                                <button onclick="event.stopPropagation();openEditSubCategoryModal('${qaId}','${catId}','${sc.id}')" class="bg-blue-500 text-white w-5 h-5 rounded-full text-[10px] hover:bg-blue-600">✏️</button>
+                                <button onclick="event.stopPropagation();deleteSubCategory('${catId}','${sc.id}')" class="bg-red-500 text-white w-5 h-5 rounded-full text-[10px] hover:bg-red-600">🗑️</button>
+                            </div>
+                        </div>`;
+                });
+                subCatsHtml = `
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-slate-800 mb-3 flex items-center gap-2"><i class="fas fa-sitemap text-indigo-600"></i> Sub-Categories</h3>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">${subCards}</div>
+                        <div class="admin-controls mt-3">
+                            <button onclick="openAddSubCategoryModal('${qaId}','${catId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-2"><i class="fas fa-plus"></i> Add Sub-Category</button>
+                        </div>
+                    </div>`;
+            }
+            
             if (cat.sheetId) {
                 sheetViewHtml = `
                     <div class="mb-4">
@@ -1196,20 +1259,14 @@
                     </div>
                     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
                         <div class="text-xs text-slate-400"><i class="fas fa-sync-alt"></i> Live from Google Sheets</div>
-                        <div class="flex text-xs rounded-lg overflow-hidden border border-gray-200">
-                            <button onclick="setCategorySheetMode('${qaId}','${catId}','data')" id="catModeData-${catId}" class="px-3 py-1.5 font-semibold ${(!cat.sheetMode || cat.sheetMode==='data') ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Styled Data</button>
-                            <button onclick="setCategorySheetMode('${qaId}','${catId}','embed')" id="catModeEmbed-${catId}" class="px-3 py-1.5 font-semibold ${cat.sheetMode==='embed' ? 'bg-teal-600 text-white' : 'bg-white text-slate-500'}">Full Formatting</button>
-                        </div>
                     </div>
-                    <div id="categorySheetDisplay"></div>
-                `;
-            } else {
+                    <div id="categorySheetDisplay"></div>`;
+            } else if (isAdmin) {
                 sheetViewHtml = `
-                    <div class="text-center text-slate-400 py-8 border-2 border-dashed border-slate-200 rounded-2xl text-sm">
-                        📊 No Google Sheet linked to this category yet.
-                        ${isAdmin ? '<br><br><button onclick="openEditCategoryModal(\'' + qaId + '\',\'' + catId + '\')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-link mr-1"></i> Link a Sheet</button>' : ''}
-                    </div>
-                `;
+                    <div class="text-center text-slate-400 py-8 border-2 border-dashed border-slate-200 rounded-2xl text-sm mb-6">
+                        📊 No Google Sheet linked to this category yet.<br><br>
+                        <button onclick="openEditCategoryModal('${qaId}','${catId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-link mr-1"></i> Link a Sheet</button>
+                    </div>`;
             }
             
             document.getElementById('categoryPageContent').innerHTML = `
@@ -1222,18 +1279,17 @@
                     <h2 class="text-2xl font-bold">${cat.title}</h2>
                     ${cat.sheetId ? '<p class="text-indigo-200 text-sm mt-1"><i class="fas fa-table mr-1"></i> Linked to Google Sheet</p>' : ''}
                 </div>
-                <div id="catSheetSection">${sheetViewHtml}</div>
+                <div id="catSheetSection">
+                    ${subCatsHtml}
+                    ${sheetViewHtml}
+                </div>
             `;
             
             // Load the sheet
             if (liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
             
             if (cat.sheetId) {
-                if (cat.sheetMode === 'embed') {
-                    loadCategorySheet(catId, cat.sheetId, cat.sheetGid);
-                } else {
-                    loadCategorySheet(catId, cat.sheetId, cat.sheetGid);
-                }
+                loadCategorySheet(catId, cat.sheetId, cat.sheetGid);
             }
             
             showPage('category');
@@ -1289,42 +1345,170 @@
             }
         }
         
-        function loadCategorySheetEmbed(catId, sheetId, gid) {
-            const el = document.getElementById('categorySheetDisplay');
-            if (!el) return;
-            
-            const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal&widget=false&headers=false&chrome=false&gid=${gid || '0'}`;
-            
-            el.innerHTML = `
-                <div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;background:white;width:100%;">
-                    <iframe src="${embedUrl}" style="width:100%;height:600px;border:none;display:block;" allowfullscreen loading="lazy"></iframe>
-                </div>
-                <div class="text-xs text-slate-400 mt-2 text-center">
-                    <i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically
-                </div>`;
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // SUB-CATEGORY CRUD
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openAddSubCategoryModal(qaId, catId) {
+            document.getElementById('subCatModalTitle').textContent = 'Add Sub-Category';
+            document.getElementById('subCatEditId').value = '';
+            document.getElementById('subCatParentQaId').value = qaId;
+            document.getElementById('subCatParentCatId').value = catId;
+            document.getElementById('subCatTitleInput').value = '';
+            document.getElementById('subCatIconInput').value = '';
+            document.getElementById('subCatSheetIdInput').value = '';
+            document.getElementById('subCatGidInput').value = '';
+            openModal('subCategoryModal');
         }
         
-        async function setCategorySheetMode(qaId, catId, mode) {
-            const categories = quickCategories[qaId] || [];
-            const cat = categories.find(c => c.id === catId);
-            if (!cat) return;
+        function openEditSubCategoryModal(qaId, catId, scId) {
+            const subCats = quickSubCategories[catId] || [];
+            const sc = subCats.find(s => s.id === scId);
+            if (!sc) return;
             
-            cat.sheetMode = mode;
+            document.getElementById('subCatModalTitle').textContent = 'Edit Sub-Category';
+            document.getElementById('subCatEditId').value = scId;
+            document.getElementById('subCatParentQaId').value = qaId;
+            document.getElementById('subCatParentCatId').value = catId;
+            document.getElementById('subCatTitleInput').value = sc.title || '';
+            document.getElementById('subCatIconInput').value = sc.icon || '';
+            document.getElementById('subCatSheetIdInput').value = sc.sheetId || '';
+            document.getElementById('subCatGidInput').value = sc.sheetGid || '';
+            openModal('subCategoryModal');
+        }
+        
+        async function saveSubCategory() {
+            const id = document.getElementById('subCatEditId').value;
+            const qaId = document.getElementById('subCatParentQaId').value;
+            const catId = document.getElementById('subCatParentCatId').value;
+            const title = document.getElementById('subCatTitleInput').value.trim();
+            const icon = document.getElementById('subCatIconInput').value.trim() || '📋';
+            const rawSheetInput = document.getElementById('subCatSheetIdInput').value.trim();
+            const gid = document.getElementById('subCatGidInput').value.trim() || '0';
+            
+            if (!title) { toast('⚠️ Please enter a title', 'error'); return; }
+            if (!catId) { toast('⚠️ Parent category missing', 'error'); return; }
+            
+            let sheetId = '';
+            if (rawSheetInput) {
+                const idMatch = rawSheetInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                sheetId = idMatch ? idMatch[1] : rawSheetInput;
+            }
+            
+            const scData = {
+                id: id || 'sc_' + Date.now(),
+                title, icon, sheetId, sheetGid: gid,
+                order: id ? ((quickSubCategories[catId] || []).find(s => s.id === id)?.order ?? 0) : (quickSubCategories[catId] || []).length
+            };
             
             try {
                 if (firebaseReady) {
-                    await db.ref('quickCategories/' + qaId + '/' + catId + '/sheetMode').set(mode);
+                    await db.ref('quickSubCategories/' + catId + '/' + scData.id).set(scData);
                 }
                 
-                // Re-render category page
+                if (!quickSubCategories[catId]) quickSubCategories[catId] = [];
+                if (id) {
+                    const idx = quickSubCategories[catId].findIndex(s => s.id === id);
+                    if (idx !== -1) quickSubCategories[catId][idx] = scData;
+                } else {
+                    quickSubCategories[catId].push(scData);
+                }
+                
+                saveToLocalStorage();
+                closeModal('subCategoryModal');
                 renderCategoryPage(qaId, catId);
+                toast(id ? '✅ Sub-category updated!' : '✅ Sub-category added!', 'success');
             } catch (e) {
-                toast('❌ Could not switch view', 'error');
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        async function deleteSubCategory(catId, scId) {
+            if (!confirm('🗑️ Delete this sub-category?')) return;
+            try {
+                if (firebaseReady) {
+                    await db.ref('quickSubCategories/' + catId + '/' + scId).remove();
+                }
+                if (quickSubCategories[catId]) {
+                    quickSubCategories[catId] = quickSubCategories[catId].filter(s => s.id !== scId);
+                }
+                saveToLocalStorage();
+                if (currentPage === 'subcategory') {
+                    history.back();
+                } else {
+                    // Re-render current category page
+                    const lastEntry = pageStack[pageStack.length - 1];
+                    if (lastEntry && lastEntry.type === 'category') renderCategoryPage(lastEntry.qaId, lastEntry.catId);
+                }
+                toast('🗑️ Deleted!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
             }
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ⭐ NEW: Category CRUD
+        // SUB-CATEGORY PAGE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function navigateToSubCategory(qaId, catId, scId) {
+            pageStack.push({ type: 'subcategory', qaId, catId, scId });
+            renderSubCategoryPage(qaId, catId, scId);
+            pushNavState();
+        }
+        
+        function goBackFromSubCategory() {
+            history.back();
+        }
+        
+        function renderSubCategoryPage(qaId, catId, scId) {
+            const subCats = quickSubCategories[catId] || [];
+            const sc = subCats.find(s => s.id === scId);
+            if (!sc) { toast('❌ Sub-category not found', 'error'); goHome(); return; }
+            
+            const qaItem = quickAccess.find(q => q.id === qaId);
+            const categories = quickCategories[qaId] || [];
+            const cat = categories.find(c => c.id === catId);
+            
+            const qaTitle = qaItem ? qaItem.title : '';
+            const catTitle = cat ? cat.title : '';
+            document.getElementById('subCategoryBreadcrumb').textContent = `${qaTitle} › ${catTitle} › ${sc.title}`;
+            
+            let contentHtml = '';
+            if (sc.sheetId) {
+                contentHtml = `
+                    <div class="mb-4">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input id="categorySearchInput" type="text" placeholder="Search in this sheet..." oninput="filterCategorySheet(this.value)" class="w-full pl-11 pr-10 py-3 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm shadow-sm">
+                            <button id="categorySearchClear" onclick="clearCategorySearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mb-3"><div class="text-xs text-slate-400"><i class="fas fa-sync-alt"></i> Live from Google Sheets</div></div>
+                    <div id="categorySheetDisplay"></div>`;
+            } else if (isAdmin) {
+                contentHtml = `<div class="text-center text-slate-400 py-8 border-2 border-dashed border-slate-200 rounded-2xl text-sm">📊 No Google Sheet linked.<br><br><button onclick="openEditSubCategoryModal('${qaId}','${catId}','${scId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-link mr-1"></i> Link a Sheet</button></div>`;
+            }
+            
+            document.getElementById('subCategoryPageContent').innerHTML = `
+                <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-3xl p-8 mb-6 relative">
+                    <div class="admin-controls absolute top-3 right-3 gap-1">
+                        <button onclick="openEditSubCategoryModal('${qaId}','${catId}','${scId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl text-sm">✏️ Edit</button>
+                        <button onclick="deleteSubCategory('${catId}','${scId}')" class="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-xl text-sm">🗑️ Delete</button>
+                    </div>
+                    <div class="text-5xl mb-3">${sc.icon || '📋'}</div>
+                    <h2 class="text-2xl font-bold">${sc.title}</h2>
+                    ${sc.sheetId ? '<p class="text-teal-200 text-sm mt-1"><i class="fas fa-table mr-1"></i> Linked to Google Sheet</p>' : ''}
+                </div>
+                ${contentHtml}`;
+            
+            if (sc.sheetId) {
+                loadCategorySheet(scId, sc.sheetId, sc.sheetGid);
+            }
+            
+            showPage('subcategory');
+            hideEmptyTables();
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ⭐ Category CRUD
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function openAddCategoryModal(parentQaId) {
             document.getElementById('catModalTitle').textContent = 'Add Category';
@@ -1430,7 +1614,9 @@
             try {
                 if (firebaseReady) {
                     await db.ref('quickCategories/' + parentQaId + '/' + catId).remove();
+                    await db.ref('quickSubCategories/' + catId).remove();
                 }
+                delete quickSubCategories[catId];
                 
                 if (quickCategories[parentQaId]) {
                     quickCategories[parentQaId] = quickCategories[parentQaId].filter(c => c.id !== catId);
@@ -1595,29 +1781,6 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ⭐ Load Embed Sheet (Full Formatting)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function loadEmbedSheet(sheetId, gid) {
-            const el = document.getElementById('quickTableDisplay');
-            if (!el) return;
-            
-            const embedUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal&widget=false&headers=false&chrome=false&gid=${gid || '0'}`;
-            
-            el.innerHTML = `
-                <div style="border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;background:white;width:100%;">
-                    <iframe 
-                        src="${embedUrl}" 
-                        style="width:100%;height:600px;border:none;display:block;"
-                        allowfullscreen
-                        loading="lazy">
-                    </iframe>
-                </div>
-                <div class="text-xs text-slate-400 mt-2 text-center">
-                    <i class="fas fa-sync-alt"></i> Live from Google Sheets — updates automatically
-                </div>`;
-        }
-        
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // ⭐ Parse Sheet Data to HTML (Auto-Formatting)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function parseSheetDataToHtml(data) {
@@ -1697,10 +1860,17 @@
                 } else if (currentPage === 'quick') {
                     renderQuickPage();
                 } else if (currentPage === 'category') {
-                    // Re-render category page from stack
                     const lastEntry = pageStack[pageStack.length - 1];
                     if (lastEntry && lastEntry.type === 'category') {
                         renderCategoryPage(lastEntry.qaId, lastEntry.catId);
+                    } else {
+                        renderHome();
+                        showPage('home');
+                    }
+                } else if (currentPage === 'subcategory') {
+                    const lastEntry = pageStack[pageStack.length - 1];
+                    if (lastEntry && lastEntry.type === 'subcategory') {
+                        renderSubCategoryPage(lastEntry.qaId, lastEntry.catId, lastEntry.scId);
                     } else {
                         renderHome();
                         showPage('home');
@@ -1726,7 +1896,7 @@
         });
         
         function showPage(page) {
-            if (page !== 'quick' && page !== 'category' && liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
+            if (page !== 'quick' && page !== 'category' && page !== 'subcategory' && liveSheetInterval) { clearInterval(liveSheetInterval); liveSheetInterval = null; }
             document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById('page-' + page);
             if (target) {
@@ -2574,7 +2744,10 @@
                 delete quickContent[id];
                 delete quickSubItems[id];
                 delete quickTables[id];
-                delete quickCategories[id];  // NEW
+                // Delete categories and their sub-categories
+                const catsToDelete = quickCategories[id] || [];
+                catsToDelete.forEach(c => { delete quickSubCategories[c.id]; });
+                delete quickCategories[id];
                 
                 saveToLocalStorage();
                 renderHome();
@@ -2781,21 +2954,6 @@
                 renderQuickPage();
             } catch (e) {
                 toast('❌ Could not unlink sheet', 'error');
-            }
-        }
-        
-        async function setSheetMode(qaId, mode) {
-            const item = quickAccess.find(q => q.id === qaId);
-            if (!item) return;
-            item.sheetMode = mode;
-            
-            try {
-                if (firebaseReady) {
-                    await db.ref('quickAccess/' + qaId + '/sheetMode').set(mode);
-                }
-                renderQuickPage();
-            } catch (e) {
-                toast('❌ Could not switch view', 'error');
             }
         }
         
@@ -3125,5 +3283,5 @@
             init();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c00e5c3fcf6596',t:'MTc4NDE5NDkzOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c6ded718eb8610',t:'MTc4NDI2NjM5Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
