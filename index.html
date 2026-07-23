@@ -582,8 +582,9 @@
     <div id="logoModal" class="modal-overlay">
         <div class="modal-box">
             <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-image text-teal-600"></i> Site Logo</h3>
-            <input id="logoUrlInput" type="text" placeholder="Logo Image URL" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <p class="text-xs text-slate-400 mb-4">Paste a direct image URL (e.g. from Imgur, Google Drive, etc.)</p>
+            <input id="logoUrlInput" type="text" placeholder="Logo Image URL" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-3 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload logo image <input id="logoFileInput" type="file" accept="image/*" class="hidden"></label>
+            <p class="text-xs text-slate-400 mb-4">Paste a direct image URL or upload an image. Uploaded images are resized automatically.</p>
             <div id="logoPreview" style="text-align:center;margin-bottom:12px;"></div>
             <div class="flex gap-3">
                 <button onclick="saveLogo()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
@@ -596,7 +597,8 @@
     <!-- FULL SITE BACKGROUND MODAL -->
     <div id="siteBackgroundModal" class="modal-overlay"><div class="modal-box">
         <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-panorama text-teal-600"></i> Full Background Photo</h3>
-        <input id="siteBackgroundUrlInput" type="url" placeholder="Full background image URL" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+        <input id="siteBackgroundUrlInput" type="url" placeholder="Full background image URL" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+        <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-3 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload full background image <input id="siteBackgroundFileInput" type="file" accept="image/*" class="hidden"></label>
         <p class="text-xs text-slate-400 mb-4">Use a direct image URL. This image will cover the full app background on every page.</p><div id="siteBackgroundPreview" style="text-align:center;margin-bottom:12px;"></div>
         <div class="flex gap-3"><button onclick="saveSiteBackground()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold">Save</button><button onclick="removeSiteBackground()" class="flex-1 bg-red-100 text-red-700 py-3 rounded-xl font-semibold">Remove</button><button onclick="closeModal('siteBackgroundModal')" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold">Cancel</button></div>
     </div></div>
@@ -605,8 +607,9 @@
         <div class="modal-box">
             <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-image text-teal-600"></i> Cover Photo</h3>
             <input type="hidden" id="coverPhotoQaId">
-            <input id="coverPhotoUrlInput" type="text" placeholder="Cover Photo URL" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <p class="text-xs text-slate-400 mb-4">Paste a direct image URL for the banner background</p>
+            <input id="coverPhotoUrlInput" type="text" placeholder="Cover Photo URL" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-3 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload cover photo <input id="coverPhotoFileInput" type="file" accept="image/*" class="hidden"></label>
+            <p class="text-xs text-slate-400 mb-4">Paste a direct image URL or upload an image. Uploaded images are resized automatically.</p>
             <div id="coverPhotoPreview" style="text-align:center;margin-bottom:12px;"></div>
             <div class="flex gap-3">
                 <button onclick="saveCoverPhoto()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
@@ -3376,6 +3379,14 @@
         }
         
 
+        // Image uploads are compressed in the browser then stored as a data URL. This avoids requiring a separate hosting service.
+        function imageFileToDataUrl(file, maxDimension, callback) {
+            if (!file || !file.type.startsWith('image/')) { toast('⚠️ Please choose an image file', 'error'); return; }
+            const reader = new FileReader();
+            reader.onload = e => { const image = new Image(); image.onload = () => { const scale = Math.min(1, maxDimension / Math.max(image.width, image.height)); const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(image.width * scale)); canvas.height = Math.max(1, Math.round(image.height * scale)); canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height); callback(canvas.toDataURL('image/jpeg', .82)); }; image.onerror = () => toast('❌ Could not read that image', 'error'); image.src = e.target.result; };
+            reader.readAsDataURL(file);
+        }
+
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // LOGO FUNCTIONS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3398,6 +3409,9 @@
         
         document.getElementById('logoUrlInput').addEventListener('input', function() {
             updateLogoPreview(this.value);
+        });
+        document.getElementById('logoFileInput').addEventListener('change', function() {
+            imageFileToDataUrl(this.files[0], 500, url => { document.getElementById('logoUrlInput').value = url; updateLogoPreview(url); });
         });
         
         function saveLogo() {
@@ -3430,6 +3444,7 @@
         function openSiteBackgroundModal() { if (!isAdmin) { toast('❌ Admin mode required', 'error'); return; } const url = localStorage.getItem('psh_siteBackground') || ''; document.getElementById('siteBackgroundUrlInput').value = url; updateSiteBackgroundPreview(url); openModal('siteBackgroundModal'); }
         function updateSiteBackgroundPreview(url) { document.getElementById('siteBackgroundPreview').innerHTML = url ? '<img src="' + url + '" style="height:120px;width:100%;object-fit:cover;border-radius:12px;" onerror="this.style.display=\'none\'">' : ''; }
         document.getElementById('siteBackgroundUrlInput').addEventListener('input', function() { updateSiteBackgroundPreview(this.value); });
+        document.getElementById('siteBackgroundFileInput').addEventListener('change', function() { imageFileToDataUrl(this.files[0], 1600, url => { document.getElementById('siteBackgroundUrlInput').value = url; updateSiteBackgroundPreview(url); }); });
         async function saveSiteBackground() { const url = document.getElementById('siteBackgroundUrlInput').value.trim(); localStorage.setItem('psh_siteBackground',url); try { if(firebaseReady) await db.ref('siteBackground').set(url); applySiteBackground(url); closeModal('siteBackgroundModal'); toast('✅ Full background photo saved!','success'); } catch(e) { toast('❌ Error: '+e.message,'error'); } }
         async function removeSiteBackground() { localStorage.removeItem('psh_siteBackground'); try { if(firebaseReady) await db.ref('siteBackground').set(''); applySiteBackground(''); closeModal('siteBackgroundModal'); toast('🗑️ Full background photo removed!','success'); } catch(e) { toast('❌ Error: '+e.message,'error'); } }
         function applySiteBackground(url) { document.body.classList.toggle('has-site-background',!!url); document.body.style.backgroundImage = url ? 'url("' + url.replace(/"/g,'\"') + '")' : ''; }
@@ -3457,6 +3472,9 @@
         
         document.getElementById('coverPhotoUrlInput').addEventListener('input', function() {
             updateCoverPhotoPreview(this.value);
+        });
+        document.getElementById('coverPhotoFileInput').addEventListener('change', function() {
+            imageFileToDataUrl(this.files[0], 1000, url => { document.getElementById('coverPhotoUrlInput').value = url; updateCoverPhotoPreview(url); });
         });
         
         async function saveCoverPhoto() {
@@ -3616,5 +3634,5 @@
             document.getElementById('pwaInstallBanner').style.display = 'none';
         }
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f94ef24c908567',t:'MTc4NDc5NTI3Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
