@@ -386,7 +386,8 @@
             <label class="flex items-center gap-2 text-sm text-slate-600 mb-3 cursor-pointer"><input id="profIconInputEnabled" type="checkbox" checked class="w-4 h-4 accent-teal-600"> Show Prof Year icon</label>
             <input id="profDriveFolderInput" type="text" placeholder="Google Drive Folder ID (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <p class="text-xs text-slate-400 mb-3">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
-            <input id="profCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="profCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-4 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload Prof Year cover photo<input id="profCoverPhotoInputFile" type="file" accept="image/*" class="hidden"></label>
             <div class="flex gap-3">
                 <button onclick="saveProf()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('profModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
@@ -404,7 +405,8 @@
             <label class="flex items-center gap-2 text-sm text-slate-600 mb-3 cursor-pointer"><input id="subjectIconInputEnabled" type="checkbox" checked class="w-4 h-4 accent-teal-600"> Show Subject icon</label>
             <input id="subjectDriveFolderInput" type="text" placeholder="Google Drive Folder ID (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <p class="text-xs text-slate-400 mb-3">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
-            <input id="subjectCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="subjectCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-4 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload Subject cover photo<input id="subjectCoverPhotoInputFile" type="file" accept="image/*" class="hidden"></label>
             <div class="flex gap-3">
                 <button onclick="saveSubject()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('subjectModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
@@ -531,7 +533,8 @@
             <p class="text-xs text-slate-400 mb-3">Paste the Sheet ID or full Google Sheets share link. Sheet must be shared as "Anyone with the link can view".</p>
             <input id="subCatGidInput" type="text" placeholder="Sheet GID (optional, default 0)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <p class="text-xs text-slate-400 mb-3">Find GID in the URL after #gid= (leave blank for first sheet)</p>
-            <input id="subCatCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="subCatCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-4 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload Sub-Category cover photo<input id="subCatCoverPhotoInputFile" type="file" accept="image/*" class="hidden"></label>
             <div class="flex gap-3">
                 <button onclick="saveSubCategory()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('subCategoryModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
@@ -3441,6 +3444,11 @@
             reader.readAsDataURL(file);
         }
 
+        ['profCoverPhotoInput','subjectCoverPhotoInput','subCatCoverPhotoInput'].forEach(id => {
+            const fileInput = document.getElementById(id + 'File');
+            if (fileInput) fileInput.addEventListener('change', function() { imageFileToDataUrl(this.files[0], 1200, url => { document.getElementById(id).value = url; toast('✅ Image ready — tap Save to apply it', 'success'); }); });
+        });
+
         function updateCategoryCoverPreview(url) { document.getElementById('catCoverPhotoPreview').innerHTML = url ? '<img src="' + url + '" style="height:100px;width:100%;object-fit:cover;border-radius:12px;" onerror="this.style.display=\'none\'">' : ''; }
         document.getElementById('catCoverPhotoInput').addEventListener('input', function() { updateCategoryCoverPreview(this.value); });
         document.getElementById('catCoverPhotoFileInput').addEventListener('change', function() { imageFileToDataUrl(this.files[0], 1000, url => { document.getElementById('catCoverPhotoInput').value = url; updateCategoryCoverPreview(url); }); });
@@ -3692,5 +3700,5 @@
             document.getElementById('pwaInstallBanner').style.display = 'none';
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f9658e686b03e7',t:'MTc4NDc5NjE5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f97105ed5503f2',t:'MTc4NDc5NjY2Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
