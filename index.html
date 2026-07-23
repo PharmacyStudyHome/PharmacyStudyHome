@@ -221,7 +221,8 @@
         <!-- PROF PAGE -->
         <div id="page-prof" class="page hidden animate-fade">
             <button onclick="goHome()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm"><i class="fas fa-arrow-left"></i> Back to Home</button>
-            <h2 id="profPageTitle" class="text-2xl font-bold text-slate-800 mb-6">Professional Year</h2>
+            <h2 id="profPageTitle" class="text-2xl font-bold text-slate-800 mb-3">Professional Year</h2>
+            <div class="admin-controls mb-5"><button onclick="openEditProfModal(currentProfId)" class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-sm font-semibold"><i class="fas fa-image mr-1"></i> Page Background Photo</button></div>
             
             <div id="profDriveSection" style="display:none;" class="mb-6">
                 <button id="profDriveBtn" class="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-2xl p-4 flex items-center gap-3 transition text-left">
@@ -245,7 +246,8 @@
         <!-- SUBJECT PAGE -->
         <div id="page-subject" class="page hidden animate-fade">
             <button onclick="goBackFromSubject()" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4 text-sm"><i class="fas fa-arrow-left"></i> Back</button>
-            <h2 id="subjectPageTitle" class="text-2xl font-bold text-slate-800 mb-6">Subject</h2>
+            <h2 id="subjectPageTitle" class="text-2xl font-bold text-slate-800 mb-3">Subject</h2>
+            <div class="admin-controls mb-5"><button onclick="openEditSubjectModal(currentSubjectId,currentProfId)" class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-sm font-semibold"><i class="fas fa-image mr-1"></i> Page Background Photo</button></div>
             
             <div id="subjectDriveSection" style="display:none;" class="mb-6">
                 <button id="subjectDriveBtn" class="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-2xl p-4 flex items-center gap-3 transition text-left">
@@ -386,7 +388,7 @@
             <label class="flex items-center gap-2 text-sm text-slate-600 mb-3 cursor-pointer"><input id="profIconInputEnabled" type="checkbox" checked class="w-4 h-4 accent-teal-600"> Show Prof Year icon</label>
             <input id="profDriveFolderInput" type="text" placeholder="Google Drive Folder ID (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <p class="text-xs text-slate-400 mb-3">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
-            <input id="profCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="profCoverPhotoInput" type="text" placeholder="PAGE BACKGROUND PHOTO URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-4 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload Prof Year cover photo<input id="profCoverPhotoInputFile" type="file" accept="image/*" class="hidden"></label>
             <div class="flex gap-3">
                 <button onclick="saveProf()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
@@ -405,7 +407,7 @@
             <label class="flex items-center gap-2 text-sm text-slate-600 mb-3 cursor-pointer"><input id="subjectIconInputEnabled" type="checkbox" checked class="w-4 h-4 accent-teal-600"> Show Subject icon</label>
             <input id="subjectDriveFolderInput" type="text" placeholder="Google Drive Folder ID (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <p class="text-xs text-slate-400 mb-3">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
-            <input id="subjectCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="subjectCoverPhotoInput" type="text" placeholder="PAGE BACKGROUND PHOTO URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-4 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload Subject cover photo<input id="subjectCoverPhotoInputFile" type="file" accept="image/*" class="hidden"></label>
             <div class="flex gap-3">
                 <button onclick="saveSubject()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
@@ -533,7 +535,7 @@
             <p class="text-xs text-slate-400 mb-3">Paste the Sheet ID or full Google Sheets share link. Sheet must be shared as "Anyone with the link can view".</p>
             <input id="subCatGidInput" type="text" placeholder="Sheet GID (optional, default 0)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <p class="text-xs text-slate-400 mb-3">Find GID in the URL after #gid= (leave blank for first sheet)</p>
-            <input id="subCatCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <input id="subCatCoverPhotoInput" type="text" placeholder="PAGE BACKGROUND PHOTO URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-4 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload Sub-Category cover photo<input id="subCatCoverPhotoInputFile" type="file" accept="image/*" class="hidden"></label>
             <div class="flex gap-3">
                 <button onclick="saveSubCategory()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
@@ -1398,6 +1400,7 @@
                 <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-3xl p-8 mb-6 relative overflow-hidden" ${cat.coverPhoto ? `style="background-image:linear-gradient(rgba(67,56,202,.72),rgba(49,46,129,.82)),url('${cat.coverPhoto}');background-size:cover;background-position:center;"` : ''}>
                     <div class="admin-controls absolute top-3 right-3 gap-1">
                         <button onclick="openEditCategoryModal('${qaId}','${catId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl text-sm">✏️ Edit</button>
+                        <button onclick="openEditCategoryModal('${qaId}','${catId}')" class="bg-violet-500/80 hover:bg-violet-600 text-white px-3 py-1.5 rounded-xl text-sm">🖼️ Background</button>
                         <button onclick="deleteCategory('${qaId}','${catId}')" class="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-xl text-sm">🗑️ Delete</button>
                     </div>
                     <div class="text-5xl mb-3">${cat.showIcon !== false ? (cat.icon || '📊') : ''}</div>
@@ -1623,6 +1626,7 @@
                 <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-3xl p-8 mb-6 relative" ${sc.coverPhoto ? `style="background-image:linear-gradient(rgba(13,148,136,.72),rgba(15,118,110,.82)),url('${sc.coverPhoto}');background-size:cover;background-position:center;"` : ''}>
                     <div class="admin-controls absolute top-3 right-3 gap-1">
                         <button onclick="openEditSubCategoryModal('${qaId}','${catId}','${scId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl text-sm">✏️ Edit</button>
+                        <button onclick="openEditSubCategoryModal('${qaId}','${catId}','${scId}')" class="bg-violet-500/80 hover:bg-violet-600 text-white px-3 py-1.5 rounded-xl text-sm">🖼️ Background</button>
                         <button onclick="deleteSubCategory('${catId}','${scId}')" class="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-xl text-sm">🗑️ Delete</button>
                     </div>
                     <div class="text-5xl mb-3">${sc.showIcon !== false ? (sc.icon || '📋') : ''}</div>
@@ -3700,5 +3704,5 @@
             document.getElementById('pwaInstallBanner').style.display = 'none';
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f97105ed5503f2',t:'MTc4NDc5NjY2Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f97ad8fcb5eff5',t:'MTc4NDc5NzA3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
