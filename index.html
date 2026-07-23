@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     <title>Pharmacy Study Home</title>
     
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d9488">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PharmaStudy">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="PharmaStudy">
+    
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -178,7 +188,10 @@
         <div id="page-home" class="page animate-fade">
             <div class="hero-gradient text-white rounded-3xl p-8 md:p-12 mb-8 shadow-xl relative overflow-hidden">
                 <div class="relative z-10">
-                    <span class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-semibold mb-4">📚 Pharmacy Study Home</span>
+                    <div class="flex items-center gap-3 mb-4">
+                        <img id="siteLogo" src="" alt="" style="display:none;max-height:48px;max-width:48px;border-radius:12px;background:white;padding:4px;" onclick="openLogoModal()">
+                        <span class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-semibold">📚 Pharmacy Study Home</span>
+                    </div>
                     <h1 id="welcomeTitle" class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">Welcome to Pharmacy Study Home!</h1>
                     <p id="welcomeText" class="text-base md:text-lg text-teal-100 max-w-2xl opacity-95">Your complete resource for pharmacy education.</p>
                     <div class="admin-controls mt-4">
@@ -312,6 +325,19 @@
         </div>
     </main>
     
+    <!-- PWA Install Banner -->
+    <div id="pwaInstallBanner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9998; background:white; border-top:2px solid #0d9488; padding:16px 20px; box-shadow:0 -4px 20px rgba(0,0,0,0.15); animation: fadeIn 0.3s ease;">
+        <div class="flex items-center gap-3">
+            <img src="icons/icon-192.png" alt="App Icon" style="width:48px;height:48px;border-radius:12px;flex-shrink:0;">
+            <div class="flex-1 min-w-0">
+                <div class="font-bold text-slate-800 text-sm">Install PharmaStudy</div>
+                <div class="text-xs text-slate-500">Add to home screen for quick access</div>
+            </div>
+            <button id="pwaInstallBtn" onclick="installPWA()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex-shrink-0">Install</button>
+            <button onclick="dismissInstallBanner()" class="text-slate-400 hover:text-slate-600 px-2 flex-shrink-0"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
     <footer class="bg-white border-t py-4 text-center text-xs text-gray-400 font-medium">
         <i class="fas fa-notes-medical text-teal-500 mr-1"></i> Pharmacy Study Home · Cloud Sync
     </footer>
@@ -423,8 +449,6 @@
             <input type="hidden" id="qaEditId">
             <input id="qaTitleInput" type="text" placeholder="Title" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <input id="qaIconInput" type="text" placeholder="Icon Emoji (e.g. 📝)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <input id="qaDriveFolderInput" type="text" placeholder="Google Drive Folder ID (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <p class="text-xs text-slate-400 mb-4">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
             <div class="flex gap-3">
                 <button onclick="saveQuickAccess()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('quickAccessModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
@@ -545,6 +569,67 @@
                 <button onclick="saveSheetLink()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('sheetLinkModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
             </div>
+        </div>
+    </div>
+
+    <!-- LOGO MODAL -->
+    <div id="logoModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-image text-teal-600"></i> Site Logo</h3>
+            <input id="logoUrlInput" type="text" placeholder="Logo Image URL" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <p class="text-xs text-slate-400 mb-4">Paste a direct image URL (e.g. from Imgur, Google Drive, etc.)</p>
+            <div id="logoPreview" style="text-align:center;margin-bottom:12px;"></div>
+            <div class="flex gap-3">
+                <button onclick="saveLogo()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
+                <button onclick="removeLogo()" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-3 rounded-xl font-semibold transition">Remove</button>
+                <button onclick="closeModal('logoModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- COVER PHOTO MODAL -->
+    <div id="coverPhotoModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-image text-teal-600"></i> Cover Photo</h3>
+            <input type="hidden" id="coverPhotoQaId">
+            <input id="coverPhotoUrlInput" type="text" placeholder="Cover Photo URL" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <p class="text-xs text-slate-400 mb-4">Paste a direct image URL for the banner background</p>
+            <div id="coverPhotoPreview" style="text-align:center;margin-bottom:12px;"></div>
+            <div class="flex gap-3">
+                <button onclick="saveCoverPhoto()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
+                <button onclick="removeCoverPhoto()" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-3 rounded-xl font-semibold transition">Remove</button>
+                <button onclick="closeModal('coverPhotoModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- BMI CALCULATOR MODAL -->
+    <div id="bmiModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-calculator text-teal-600"></i> BMI Calculator</h3>
+            <div class="mb-3">
+                <label class="text-sm font-medium text-slate-700 mb-1 block">Weight (kg)</label>
+                <input id="bmiWeight" type="number" placeholder="e.g. 70" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+            </div>
+            <div class="mb-3">
+                <label class="text-sm font-medium text-slate-700 mb-1 block">Height</label>
+                <div class="flex gap-2">
+                    <input id="bmiHeight" type="number" placeholder="e.g. 170" class="flex-1 p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <select id="bmiHeightUnit" class="p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">
+                        <option value="cm">cm</option>
+                        <option value="m">m</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="calculateBMI()" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition mb-3">Calculate BMI</button>
+            <div id="bmiResult" style="display:none;" class="bg-gray-50 rounded-xl p-4 text-center">
+                <div id="bmiValue" class="text-3xl font-bold text-teal-700"></div>
+                <div id="bmiCategory" class="text-sm text-slate-600 mt-1"></div>
+                <div class="w-full bg-gray-200 rounded-full h-3 mt-3 overflow-hidden">
+                    <div id="bmiBar" class="h-3 rounded-full transition-all" style="width:0%"></div>
+                </div>
+            </div>
+            <button onclick="closeModal('bmiModal')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition mt-2">Close</button>
         </div>
     </div>
     </div> <!-- end #appContent -->
@@ -685,6 +770,7 @@
             
             renderAll();
             applyViewMode();
+            applyLogo(localStorage.getItem('psh_logo') || '');
             history.replaceState({ page: 'home', profId: null, subjectId: null, stack: [] }, '');
             loadScratchpad();
         }
@@ -765,6 +851,11 @@
             if (data.welcomeContent && data.welcomeContent.title && data.welcomeContent.title.length > 5) {
                 welcomeContent = data.welcomeContent;
             }
+            
+            // Load logo
+            if (data.siteLogo) {
+                localStorage.setItem('psh_logo', data.siteLogo);
+            }
         }
         
         async function seedMissingFirebaseData() {
@@ -828,10 +919,15 @@
             quickAccess.forEach((item, idx) => {
                 // Grid card
                 const btn = document.createElement('button');
-                btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-4 text-center transition card-hover relative group';
+                const coverStyle = item.coverPhoto ? `background-image:url('${item.coverPhoto}');background-size:cover;background-position:center;` : '';
+                btn.className = 'hover:bg-teal-50 border border-gray-200 rounded-2xl p-4 text-center transition card-hover relative group overflow-hidden';
+                btn.style.cssText = coverStyle + 'background-color:white;';
                 btn.innerHTML = `
+                    ${item.coverPhoto ? '<div class="absolute inset-0 bg-white/80"></div>' : ''}
+                    <div class="relative z-10">
                     <div class="text-3xl mb-1">${item.icon || '📌'}</div>
                     <div class="text-sm font-semibold text-slate-700">${item.title}</div>
+                    </div>
                     <div class="admin-controls absolute top-1 right-1 gap-1">
                         <button onclick="event.stopPropagation();moveQuickAccess('${item.id}','up')" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
                         <button onclick="event.stopPropagation();moveQuickAccess('${item.id}','down')" ${idx === quickAccess.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
@@ -849,6 +945,8 @@
                     <div class="list-body"><div class="list-title">${item.title}</div><div class="list-sub">Quick Access</div></div>
                     <i class="fas fa-chevron-right text-slate-300"></i>
                 `;
+                if (item.coverPhoto) li.style.backgroundImage = `url('${item.coverPhoto}')`;
+                if (item.coverPhoto) li.style.backgroundSize = 'cover';
                 li.onclick = () => navigateToQuick(item.id);
                 qaList.appendChild(li);
             });
@@ -1071,7 +1169,7 @@
                         <div class="bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-5 transition card-hover relative cursor-pointer group" onclick="navigateToCategory('${qaId}', '${cat.id}')">
                             <div class="text-3xl mb-2">${cat.icon || '📊'}</div>
                             <div class="font-semibold text-slate-800 text-sm">${cat.title}</div>
-                            ${cat.sheetId ? '<div class="text-xs text-blue-500 mt-1"><i class="fas fa-table"></i> Sheet linked</div>' : '<div class="text-xs text-amber-500 mt-1"><i class="fas fa-exclamation-circle"></i> No sheet</div>'}
+                            
                             <div class="admin-controls absolute top-1 right-1 gap-1">
                                 <button onclick="event.stopPropagation();moveCategory('${qaId}','${cat.id}','up')" ${catIdx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
                                 <button onclick="event.stopPropagation();moveCategory('${qaId}','${cat.id}','down')" ${catIdx === categories.length - 1 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬇️</button>
@@ -1101,38 +1199,29 @@
                 `;
             }
             
-            const calculatorHtml = isCalculatorPage(item) ? renderCalculatorHubHtml() : '';
-            
             document.getElementById('quickPageContent').innerHTML = `
-                <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-3xl p-8 mb-6 relative">
-                    <div class="admin-controls absolute top-3 right-3 gap-1">
-                        <button onclick="openEditQuickAccessModal('${qaId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl text-sm">✏️ Edit</button>
-                        <button onclick="deleteQuickAccess('${qaId}')" class="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-xl text-sm">🗑️</button>
+                <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-2xl p-4 mb-4 relative overflow-hidden" ${item.coverPhoto ? `style="background-image:url('${item.coverPhoto}');background-size:cover;background-position:center;"` : ''}>
+                    <div class="absolute inset-0 bg-gradient-to-br from-teal-600/80 to-teal-800/80"></div>
+                    <div class="relative z-10">
+                    <div class="admin-controls absolute top-0 right-0 gap-1">
+                        <button onclick="openEditQuickAccessModal('${qaId}')" class="bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded-lg text-xs">✏️</button>
+                        <button onclick="deleteQuickAccess('${qaId}')" class="bg-red-500/80 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs">🗑️</button>
                     </div>
-                    <div class="text-5xl mb-3">${item.icon || '📌'}</div>
-                    <h2 class="text-2xl font-bold">${item.title}</h2>
+                    <div class="flex items-center gap-3">
+                        <div class="text-3xl">${item.icon || '📌'}</div>
+                        <h2 class="text-lg font-bold">${item.title}</h2>
+                    </div>
                     <div class="admin-controls mt-2">
-                        <button onclick="openQuickContentModal('${qaId}')" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-sm">✏️ Edit Content</button>
+                        <button onclick="openQuickContentModal('${qaId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-xs">✏️ Edit Content</button>
+                        <button onclick="openCoverPhotoModal('${qaId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-xs">🖼️ Cover Photo</button>
                     </div>
-                </div>
+                    </div></div>
                 ${content ? `<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
                     <h3 class="font-semibold text-slate-800 mb-2">📝 Content</h3>
                     <p class="text-slate-600 whitespace-pre-line">${content}</p>
                 </div>` : ''}
                 
-                ${item.driveFolder ? `<div class="mb-6">
-                    <button onclick="navigateToDrive('${item.driveFolder}', '${(item.title || '').replace(/'/g, "\\'")} Files')" class="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-2xl p-4 flex items-center gap-3 transition text-left">
-                        <span class="text-2xl">📁</span>
-                        <div>
-                            <div class="font-semibold text-slate-800">Drive Files</div>
-                            <div class="text-xs text-slate-500">Browse all files linked to this button from Google Drive</div>
-                        </div>
-                        <i class="fas fa-chevron-right text-slate-300 ml-auto"></i>
-                    </button>
-                </div>` : ''}
-                
-                ${calculatorHtml}
-                
+
                 ${categoriesHtml}
                 
                 <div class="mb-6">
@@ -1147,6 +1236,12 @@
                     ${item.sheetId ? `<div class="text-xs text-slate-400 mb-2"><i class="fas fa-sync-alt"></i> Live from Google Sheets</div>` : ''}
                     <div id="quickTableDisplay"></div>
                 </div>
+                ${(item.title || '').toLowerCase().includes('calculator') || (item.title || '').toLowerCase().includes('bmi') ? `
+                <div class="mb-4">
+                    <button onclick="openBMICalculator()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                        <i class="fas fa-calculator mr-1"></i> BMI Calculator
+                    </button>
+                </div>` : ''}
                 <h3 class="font-semibold text-slate-800 mb-3">🔗 Links & Resources</h3>
                 <div id="quickSubItemsList" class="space-y-2"></div>
             `;
@@ -1235,7 +1330,7 @@
                         <div class="bg-white hover:bg-indigo-50 border border-indigo-200 rounded-2xl p-4 transition card-hover relative cursor-pointer" onclick="navigateToSubCategory('${qaId}','${catId}','${sc.id}')">
                             <div class="text-2xl mb-1">${sc.icon || '📋'}</div>
                             <div class="font-semibold text-slate-800 text-xs">${sc.title}</div>
-                            ${sc.sheetId ? '<div class="text-xs text-blue-500 mt-1"><i class="fas fa-table"></i> Sheet</div>' : ''}
+                            
                             <div class="admin-controls absolute top-1 right-1 gap-1">
                                 <button onclick="event.stopPropagation();openEditSubCategoryModal('${qaId}','${catId}','${sc.id}')" class="bg-blue-500 text-white w-5 h-5 rounded-full text-[10px] hover:bg-blue-600">✏️</button>
                                 <button onclick="event.stopPropagation();deleteSubCategory('${catId}','${sc.id}')" class="bg-red-500 text-white w-5 h-5 rounded-full text-[10px] hover:bg-red-600">🗑️</button>
@@ -1268,7 +1363,7 @@
             } else if (isAdmin) {
                 sheetViewHtml = `
                     <div class="text-center text-slate-400 py-8 border-2 border-dashed border-slate-200 rounded-2xl text-sm mb-6">
-                        📊 No Google Sheet linked to this category yet.<br><br>
+                        📊 No sheet linked yet.<br><br>
                         <button onclick="openEditCategoryModal('${qaId}','${catId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-link mr-1"></i> Link a Sheet</button>
                     </div>`;
             }
@@ -1281,7 +1376,7 @@
                     </div>
                     <div class="text-5xl mb-3">${cat.icon || '📊'}</div>
                     <h2 class="text-2xl font-bold">${cat.title}</h2>
-                    ${cat.sheetId ? '<p class="text-indigo-200 text-sm mt-1"><i class="fas fa-table mr-1"></i> Linked to Google Sheet</p>' : ''}
+                    ${cat.sheetId ? '' : ''}
                 </div>
                 <div id="catSheetSection">
                     ${subCatsHtml}
@@ -1488,7 +1583,7 @@
                     <div class="flex items-center justify-between mb-3"><div class="text-xs text-slate-400"><i class="fas fa-sync-alt"></i> Live from Google Sheets</div></div>
                     <div id="categorySheetDisplay"></div>`;
             } else if (isAdmin) {
-                contentHtml = `<div class="text-center text-slate-400 py-8 border-2 border-dashed border-slate-200 rounded-2xl text-sm">📊 No Google Sheet linked.<br><br><button onclick="openEditSubCategoryModal('${qaId}','${catId}','${scId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-link mr-1"></i> Link a Sheet</button></div>`;
+                contentHtml = `<div class="text-center text-slate-400 py-8 border-2 border-dashed border-slate-200 rounded-2xl text-sm">📊 No sheet linked yet.<br><br><button onclick="openEditSubCategoryModal('${qaId}','${catId}','${scId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-link mr-1"></i> Link a Sheet</button></div>`;
             }
             
             document.getElementById('subCategoryPageContent').innerHTML = `
@@ -1499,7 +1594,7 @@
                     </div>
                     <div class="text-5xl mb-3">${sc.icon || '📋'}</div>
                     <h2 class="text-2xl font-bold">${sc.title}</h2>
-                    ${sc.sheetId ? '<p class="text-teal-200 text-sm mt-1"><i class="fas fa-table mr-1"></i> Linked to Google Sheet</p>' : ''}
+                    ${sc.sheetId ? '' : ''}
                 </div>
                 ${contentHtml}`;
             
@@ -2675,7 +2770,6 @@
             document.getElementById('qaEditId').value = '';
             document.getElementById('qaTitleInput').value = '';
             document.getElementById('qaIconInput').value = '';
-            document.getElementById('qaDriveFolderInput').value = '';
             openModal('quickAccessModal');
         }
         
@@ -2687,7 +2781,6 @@
             document.getElementById('qaEditId').value = id;
             document.getElementById('qaTitleInput').value = item.title;
             document.getElementById('qaIconInput').value = item.icon || '';
-            document.getElementById('qaDriveFolderInput').value = item.driveFolder || '';
             openModal('quickAccessModal');
         }
         
@@ -2695,7 +2788,6 @@
             const id = document.getElementById('qaEditId').value;
             const title = document.getElementById('qaTitleInput').value.trim();
             const icon = document.getElementById('qaIconInput').value.trim() || '📌';
-            const driveFolder = document.getElementById('qaDriveFolderInput').value.trim();
             
             if (!title) { 
                 toast('⚠️ Please enter a title', 'error'); 
@@ -2703,7 +2795,6 @@
             }
             
             const qaData = { id: id || 'qa' + Date.now(), title, icon };
-            if (driveFolder) qaData.driveFolder = driveFolder;
             
             try {
                 if (firebaseReady) {
@@ -3282,122 +3373,181 @@
         
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // BUILT-IN PHARMACY CALCULATORS
+        // LOGO FUNCTIONS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function isCalculatorPage(item) {
-            const t = (item?.title || '').toLowerCase();
-            return item?.id === 'qa3' || t.includes('calculator') || t.includes('calculators');
+        function openLogoModal() {
+            if (!isAdmin) { toast('❌ Admin mode required', 'error'); return; }
+            const current = localStorage.getItem('psh_logo') || '';
+            document.getElementById('logoUrlInput').value = current;
+            updateLogoPreview(current);
+            openModal('logoModal');
         }
-
-        function renderCalculatorHubHtml() {
-            return `
-                <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-6">
-                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fas fa-calculator text-teal-600"></i> Functional Pharmacy Calculators</h3>
-                            <p class="text-xs text-slate-500 mt-1">Enter values below. Results calculate instantly on this website.</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-5">
-                        ${calcButton('bmi','⚖️','BMI')}
-                        ${calcButton('crcl','🧪','CrCl')}
-                        ${calcButton('bsa','📏','BSA')}
-                        ${calcButton('drip','💧','IV Drip')}
-                        ${calcButton('calcium','🦴','Corrected Ca')}
-                        ${calcButton('anion','⚗️','Anion Gap')}
-                        ${calcButton('peddose','👶','Pediatric Dose')}
-                        ${calcButton('para','💊','Paracetamol')}
-                        ${calcButton('amox','🦠','Amoxicillin')}
-                        ${calcButton('insulin','💉','Insulin')}
-                    </div>
-                    <div id="calcPanel" class="border border-teal-100 rounded-2xl p-4 bg-slate-50">
-                        ${calculatorFormHtml('bmi')}
-                    </div>
-                    <div class="mt-3 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
-                        <b>Safety note:</b> These calculators are educational tools. Always verify units, patient factors, maximum doses, local guidelines, and prescriber orders before clinical use.
-                    </div>
-                </div>`;
+        
+        function updateLogoPreview(url) {
+            const el = document.getElementById('logoPreview');
+            if (url) {
+                el.innerHTML = '<img src="' + url + '" style="max-height:64px;border-radius:12px;" onerror="this.style.display=none">';
+            } else {
+                el.innerHTML = '';
+            }
         }
-
-        function calcButton(id, icon, label) {
-            return `<button onclick="showCalculator('${id}')" class="bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 rounded-xl px-3 py-3 text-sm font-semibold transition"><span class="block text-xl mb-1">${icon}</span>${label}</button>`;
+        
+        document.getElementById('logoUrlInput').addEventListener('input', function() {
+            updateLogoPreview(this.value);
+        });
+        
+        function saveLogo() {
+            const url = document.getElementById('logoUrlInput').value.trim();
+            localStorage.setItem('psh_logo', url);
+            if (firebaseReady) db.ref('siteLogo').set(url);
+            applyLogo(url);
+            closeModal('logoModal');
+            toast('✅ Logo saved!', 'success');
         }
-
-        function showCalculator(type) {
-            const panel = document.getElementById('calcPanel');
-            if (!panel) return;
-            panel.innerHTML = calculatorFormHtml(type);
+        
+        function removeLogo() {
+            localStorage.removeItem('psh_logo');
+            if (firebaseReady) db.ref('siteLogo').set('');
+            applyLogo('');
+            closeModal('logoModal');
+            toast('🗑️ Logo removed!', 'success');
         }
-
-        function inputRow(id, label, unit, value='') {
-            return `<label class="block"><span class="text-xs font-semibold text-slate-600">${label} ${unit ? '('+unit+')' : ''}</span><input id="${id}" type="number" step="any" value="${value}" oninput="runCurrentCalculator()" class="mt-1 w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"></label>`;
+        
+        function applyLogo(url) {
+            const el = document.getElementById('siteLogo');
+            if (url) {
+                el.src = url;
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
         }
-        function selectRow(id, label, options) {
-            return `<label class="block"><span class="text-xs font-semibold text-slate-600">${label}</span><select id="${id}" onchange="runCurrentCalculator()" class="mt-1 w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">${options.map(o=>`<option value="${o}">${o}</option>`).join('')}</select></label>`;
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // COVER PHOTO FUNCTIONS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openCoverPhotoModal(qaId) {
+            document.getElementById('coverPhotoQaId').value = qaId;
+            const item = quickAccess.find(q => q.id === qaId);
+            const current = item?.coverPhoto || '';
+            document.getElementById('coverPhotoUrlInput').value = current;
+            updateCoverPhotoPreview(current);
+            openModal('coverPhotoModal');
         }
-        function resultBox() {
-            return `<div id="calcResult" class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-slate-800 text-sm min-h-[70px]"><b>Result:</b> Enter values to calculate.</div>`;
+        
+        function updateCoverPhotoPreview(url) {
+            const el = document.getElementById('coverPhotoPreview');
+            if (url) {
+                el.innerHTML = '<img src="' + url + '" style="max-height:100px;border-radius:12px;width:100%;object-fit:cover;" onerror="this.style.display=none">';
+            } else {
+                el.innerHTML = '';
+            }
         }
-
-        function calculatorFormHtml(type) {
-            window.currentCalcType = type;
-            const forms = {
-                bmi: `<h4 class="font-bold text-slate-800 mb-3">⚖️ BMI Calculator</h4><div class="grid sm:grid-cols-2 gap-3">${inputRow('calc_weight','Weight','kg',70)}${inputRow('calc_height_m','Height','m',1.7)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
-                crcl: `<h4 class="font-bold text-slate-800 mb-3">🧪 Creatinine Clearance — Cockcroft-Gault</h4><div class="grid sm:grid-cols-2 gap-3">${inputRow('calc_age','Age','years',50)}${inputRow('calc_weight','Weight','kg',70)}${inputRow('calc_scr','Serum Creatinine','mg/dL',1)}${selectRow('calc_sex','Sex',['Male','Female'])}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
-                bsa: `<h4 class="font-bold text-slate-800 mb-3">📏 BSA — Mosteller</h4><div class="grid sm:grid-cols-2 gap-3">${inputRow('calc_weight','Weight','kg',70)}${inputRow('calc_height_cm','Height','cm',170)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
-                drip: `<h4 class="font-bold text-slate-800 mb-3">💧 IV Drip Rate</h4><div class="grid sm:grid-cols-3 gap-3">${inputRow('calc_vol','Volume','mL',1000)}${inputRow('calc_time','Time','hours',8)}${inputRow('calc_drop','Drop factor','gtt/mL',20)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
-                calcium: `<h4 class="font-bold text-slate-800 mb-3">🦴 Corrected Calcium</h4><div class="grid sm:grid-cols-2 gap-3">${inputRow('calc_ca','Measured calcium','mg/dL',8)}${inputRow('calc_albumin','Albumin','g/dL',3)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
-                anion: `<h4 class="font-bold text-slate-800 mb-3">⚗️ Anion Gap</h4><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3">${inputRow('calc_na','Sodium','mEq/L',140)}${inputRow('calc_cl','Chloride','mEq/L',104)}${inputRow('calc_hco3','Bicarbonate','mEq/L',24)}${inputRow('calc_albumin','Albumin','g/dL',4)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
-                peddose: `<h4 class="font-bold text-slate-800 mb-3">👶 Pediatric Dose</h4><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3">${inputRow('calc_weight','Weight','kg',20)}${inputRow('calc_mgkg','Dose','mg/kg/dose',10)}${inputRow('calc_freq','Frequency','doses/day',3)}${inputRow('calc_maxdose','Max per dose','mg',500)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
-                para: `<h4 class="font-bold text-slate-800 mb-3">💊 Paracetamol Dose</h4><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3">${inputRow('calc_weight','Weight','kg',20)}${inputRow('calc_mgkg','Dose','mg/kg/dose',15)}${inputRow('calc_maxkg','Max daily','mg/kg/day',60)}${inputRow('calc_adultmax','Adult max','mg/day',4000)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
-                amox: `<h4 class="font-bold text-slate-800 mb-3">🦠 Amoxicillin Pediatric Dose</h4><div class="grid sm:grid-cols-2 md:grid-cols-5 gap-3">${inputRow('calc_weight','Weight','kg',20)}${inputRow('calc_mgkgday','Daily dose','mg/kg/day',50)}${inputRow('calc_freq','Frequency','doses/day',2)}${inputRow('calc_strength','Susp strength','mg/5mL',250)}${inputRow('calc_maxdaily','Max daily','mg/day',3000)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
-                insulin: `<h4 class="font-bold text-slate-800 mb-3">💉 Insulin Correction Dose</h4><div class="grid sm:grid-cols-2 md:grid-cols-5 gap-3">${inputRow('calc_current','Current BG','mg/dL',250)}${inputRow('calc_target','Target BG','mg/dL',120)}${inputRow('calc_factor','Correction factor','mg/dL/unit',50)}${inputRow('calc_carbs','Carbs','g',60)}${inputRow('calc_ratio','I:C ratio','g/unit',15)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`
-            };
-            return forms[type] || forms.bmi;
-        }
-
-        function val(id) { const el = document.getElementById(id); return el ? parseFloat(el.value) : NaN; }
-        function setResult(html) { const el = document.getElementById('calcResult'); if (el) el.innerHTML = html; }
-        function fmt(n, d=2) { return Number.isFinite(n) ? Number(n).toFixed(d).replace(/\.00$/,'') : ''; }
-
-        function runCurrentCalculator() {
-            const t = window.currentCalcType || 'bmi';
+        
+        document.getElementById('coverPhotoUrlInput').addEventListener('input', function() {
+            updateCoverPhotoPreview(this.value);
+        });
+        
+        async function saveCoverPhoto() {
+            const qaId = document.getElementById('coverPhotoQaId').value;
+            const url = document.getElementById('coverPhotoUrlInput').value.trim();
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            item.coverPhoto = url;
             try {
-                if (t === 'bmi') {
-                    const w=val('calc_weight'), h=val('calc_height_m'); const bmi=w/(h*h);
-                    const cat=bmi<18.5?'Underweight':bmi<25?'Normal':bmi<30?'Overweight':'Obesity';
-                    setResult(`<b>BMI:</b> ${fmt(bmi)} kg/m²<br><b>Category:</b> ${cat}`);
-                } else if (t === 'crcl') {
-                    const age=val('calc_age'), w=val('calc_weight'), scr=val('calc_scr'); const sex=document.getElementById('calc_sex')?.value || 'Male';
-                    const crcl=((140-age)*w)/(72*scr)*(sex==='Female'?0.85:1);
-                    setResult(`<b>Creatinine Clearance:</b> ${fmt(crcl)} mL/min<br><span class="text-xs text-slate-600">Cockcroft-Gault estimate. Use clinical judgment for weight selection.</span>`);
-                } else if (t === 'bsa') {
-                    const w=val('calc_weight'), h=val('calc_height_cm'); const bsa=Math.sqrt((w*h)/3600);
-                    setResult(`<b>BSA:</b> ${fmt(bsa)} m²`);
-                } else if (t === 'drip') {
-                    const v=val('calc_vol'), time=val('calc_time'), drop=val('calc_drop');
-                    setResult(`<b>mL/hour:</b> ${fmt(v/time)} mL/hr<br><b>Drip rate:</b> ${fmt((v*drop)/(time*60),0)} gtt/min`);
-                } else if (t === 'calcium') {
-                    const ca=val('calc_ca'), alb=val('calc_albumin'); const corr=ca+0.8*(4-alb);
-                    const cat=corr<8.5?'Low':corr<=10.5?'Normal':'High';
-                    setResult(`<b>Corrected Calcium:</b> ${fmt(corr)} mg/dL<br><b>Interpretation:</b> ${cat}`);
-                } else if (t === 'anion') {
-                    const na=val('calc_na'), cl=val('calc_cl'), hco3=val('calc_hco3'), alb=val('calc_albumin'); const ag=na-(cl+hco3); const cag=ag+2.5*(4-alb);
-                    setResult(`<b>Anion Gap:</b> ${fmt(ag)} mEq/L<br><b>Albumin-corrected AG:</b> ${fmt(cag)} mEq/L`);
-                } else if (t === 'peddose') {
-                    const w=val('calc_weight'), dose=val('calc_mgkg'), freq=val('calc_freq'), max=val('calc_maxdose'); const calc=w*dose; const final=Math.min(calc,max);
-                    setResult(`<b>Dose per administration:</b> ${fmt(final)} mg<br><b>Total daily dose:</b> ${fmt(final*freq)} mg/day<br><span class="text-xs text-slate-600">Calculated dose before max check: ${fmt(calc)} mg</span>`);
-                } else if (t === 'para') {
-                    const w=val('calc_weight'), mgkg=val('calc_mgkg'), maxkg=val('calc_maxkg'), adultmax=val('calc_adultmax'); const dose=w*mgkg; const maxdaily=Math.min(w*maxkg,adultmax);
-                    setResult(`<b>Dose per dose:</b> ${fmt(dose)} mg<br><b>Maximum daily dose:</b> ${fmt(maxdaily)} mg/day<br><span class="text-xs text-rose-600">Check all products to avoid duplicate paracetamol.</span>`);
-                } else if (t === 'amox') {
-                    const w=val('calc_weight'), mgkgday=val('calc_mgkgday'), freq=val('calc_freq'), strength=val('calc_strength'), maxdaily=val('calc_maxdaily'); const daily=Math.min(w*mgkgday,maxdaily); const perdose=daily/freq; const ml=perdose/(strength/5);
-                    setResult(`<b>Daily dose:</b> ${fmt(daily)} mg/day<br><b>Dose per administration:</b> ${fmt(perdose)} mg<br><b>Volume per dose:</b> ${fmt(ml)} mL`);
-                } else if (t === 'insulin') {
-                    const cur=val('calc_current'), target=val('calc_target'), factor=val('calc_factor'), carbs=val('calc_carbs'), ratio=val('calc_ratio'); const corr=Math.max((cur-target)/factor,0); const meal=carbs/ratio;
-                    setResult(`<b>Correction dose:</b> ${fmt(corr)} units<br><b>Meal bolus:</b> ${fmt(meal)} units<br><b>Total estimated dose:</b> ${fmt(corr+meal)} units<br><span class="text-xs text-rose-600">Use only with a prescribed insulin plan.</span>`);
-                }
-            } catch(e) { setResult('<b>Result:</b> Please enter valid numbers.'); }
+                if (firebaseReady) await db.ref('quickAccess/' + qaId + '/coverPhoto').set(url);
+                closeModal('coverPhotoModal');
+                renderQuickPage();
+                toast('✅ Cover photo saved!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        async function removeCoverPhoto() {
+            const qaId = document.getElementById('coverPhotoQaId').value;
+            const item = quickAccess.find(q => q.id === qaId);
+            if (!item) return;
+            delete item.coverPhoto;
+            try {
+                if (firebaseReady) await db.ref('quickAccess/' + qaId + '/coverPhoto').remove();
+                closeModal('coverPhotoModal');
+                renderQuickPage();
+                toast('🗑️ Cover photo removed!', 'success');
+            } catch (e) {
+                toast('❌ Error: ' + e.message, 'error');
+            }
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // BMI CALCULATOR
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openBMICalculator() {
+            document.getElementById('bmiWeight').value = '';
+            document.getElementById('bmiHeight').value = '';
+            document.getElementById('bmiHeightUnit').value = 'cm';
+            document.getElementById('bmiResult').style.display = 'none';
+            openModal('bmiModal');
+        }
+        
+        function calculateBMI() {
+            const weight = parseFloat(document.getElementById('bmiWeight').value);
+            let height = parseFloat(document.getElementById('bmiHeight').value);
+            const unit = document.getElementById('bmiHeightUnit').value;
+            
+            if (!weight || !height || weight <= 0 || height <= 0) {
+                toast('⚠️ Please enter valid weight and height', 'error');
+                return;
+            }
+            
+            // Convert cm to m if needed
+            if (unit === 'cm') {
+                height = height / 100;
+            }
+            
+            const bmi = weight / (height * height);
+            const bmiRound = bmi.toFixed(1);
+            
+            let category = '';
+            let color = '';
+            let barWidth = 0;
+            let barColor = '';
+            
+            if (bmi < 18.5) {
+                category = 'Underweight';
+                color = '#3b82f6';
+                barWidth = (bmi / 40) * 100;
+                barColor = '#3b82f6';
+            } else if (bmi < 25) {
+                category = 'Normal weight';
+                color = '#22c55e';
+                barWidth = (bmi / 40) * 100;
+                barColor = '#22c55e';
+            } else if (bmi < 30) {
+                category = 'Overweight';
+                color = '#f59e0b';
+                barWidth = (bmi / 40) * 100;
+                barColor = '#f59e0b';
+            } else {
+                category = 'Obese';
+                color = '#ef4444';
+                barWidth = Math.min((bmi / 40) * 100, 100);
+                barColor = '#ef4444';
+            }
+            
+            document.getElementById('bmiValue').textContent = bmiRound;
+            document.getElementById('bmiValue').style.color = color;
+            document.getElementById('bmiCategory').textContent = category;
+            document.getElementById('bmiResult').style.display = 'block';
+            document.getElementById('bmiBar').style.width = barWidth + '%';
+            document.getElementById('bmiBar').style.background = barColor;
+        }
+        
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // QUICK ACCESS BUTTON COVER PHOTOS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function renderQuickAccessCard(item, idx) {
+            // This function is called from renderHome to create cover-photo-aware cards
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3406,6 +3556,54 @@
         document.addEventListener('DOMContentLoaded', () => {
             init();
         });
+        
+        // Register Service Worker for PWA
+        let deferredPrompt = null;
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('✅ Service Worker registered:', reg.scope))
+                    .catch((err) => console.warn('⚠️ Service Worker registration failed:', err));
+            });
+        }
+        
+        // Capture the install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show install banner if not dismissed
+            if (!localStorage.getItem('psh_installDismissed')) {
+                setTimeout(() => {
+                    document.getElementById('pwaInstallBanner').style.display = 'block';
+                }, 3000);
+            }
+        });
+        
+        function installPWA() {
+            if (!deferredPrompt) {
+                toast('ℹ️ Open this site in Chrome/Safari to install', 'warning');
+                return;
+            }
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choice) => {
+                if (choice.outcome === 'accepted') {
+                    toast('✅ App installed!', 'success');
+                    document.getElementById('pwaInstallBanner').style.display = 'none';
+                }
+                deferredPrompt = null;
+            });
+        }
+        
+        function dismissInstallBanner() {
+            document.getElementById('pwaInstallBanner').style.display = 'none';
+            localStorage.setItem('psh_installDismissed', '1');
+        }
+        
+        // Hide banner if already installed (running in standalone mode)
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            document.getElementById('pwaInstallBanner').style.display = 'none';
+        }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c6ded718eb8610',t:'MTc4NDI2NjM5Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f8652418f15ea6',t:'MTc4NDc4NTY5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
