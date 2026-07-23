@@ -635,6 +635,17 @@
         </div>
     </div>
     
+    <!-- PHARMACY CALCULATOR SUITE -->
+    <div id="pharmacyCalculatorModal" class="modal-overlay"><div class="modal-box" style="max-width:600px;">
+        <h3 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-calculator text-teal-600"></i> Pharmacy Calculators</h3>
+        <p class="text-xs text-slate-500 mb-4">For educational support only. Confirm all clinical calculations independently before use.</p>
+        <select id="pharmCalcType" onchange="renderPharmacyCalculator()" class="w-full p-3 border border-gray-200 rounded-xl mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <option value="bmi">BMI — Body Mass Index</option><option value="bsa">BSA — Mosteller formula</option><option value="crcl">Creatinine Clearance — Cockcroft–Gault</option><option value="ibw">Ideal Body Weight — Devine formula</option><option value="adjbw">Adjusted Body Weight</option><option value="dose">Weight-based Dose</option><option value="tablet">Tablet / Capsule Quantity</option><option value="liquid">Liquid Dose Volume</option><option value="dilution">Dilution / Final Concentration</option><option value="infusion">IV Infusion Rate</option><option value="drip">IV Drip Rate</option><option value="fluid">Pediatric Maintenance Fluid (4–2–1)</option><option value="clark">Pediatric Dose — Clark's rule</option><option value="calcium">Corrected Calcium</option><option value="anion">Anion Gap</option><option value="glucose">Glucose Unit Conversion</option><option value="unit">Mass Unit Converter</option>
+        </select>
+        <div id="pharmCalcFields"></div><div id="pharmCalcResult" class="hidden mt-4 rounded-xl p-4 text-center"></div>
+        <button onclick="closeModal('pharmacyCalculatorModal')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition mt-4">Close</button>
+    </div></div>
+
     <!-- BMI CALCULATOR MODAL -->
     <div id="bmiModal" class="modal-overlay">
         <div class="modal-box">
@@ -1241,7 +1252,7 @@
                     </div>
                     <div class="admin-controls mt-2">
                         <button onclick="openQuickContentModal('${qaId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-xs">✏️ Edit Content</button>
-                        <button onclick="openCoverPhotoModal('${qaId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-xs">🖼️ Cover Photo</button>
+                        <button onclick="openCoverPhotoModal('${qaId}')" class="bg-violet-500/90 hover:bg-violet-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold"><i class="fas fa-image mr-1"></i> Page Background Photo</button>
                     </div>
                     </div></div>
                 ${content ? `<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
@@ -1266,8 +1277,8 @@
                 </div>
                 ${(item.title || '').toLowerCase().includes('calculator') || (item.title || '').toLowerCase().includes('bmi') ? `
                 <div class="mb-4">
-                    <button onclick="openBMICalculator()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
-                        <i class="fas fa-calculator mr-1"></i> BMI Calculator
+                    <button onclick="openPharmacyCalculator()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                        <i class="fas fa-calculator mr-1"></i> Pharmacy Calculators
                     </button>
                 </div>` : ''}
                 <h3 class="font-semibold text-slate-800 mb-3">🔗 Links & Resources</h3>
@@ -3579,6 +3590,31 @@
         }
         
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // PHARMACY CALCULATOR SUITE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openPharmacyCalculator() { document.getElementById('pharmCalcType').value = 'bmi'; renderPharmacyCalculator(); openModal('pharmacyCalculatorModal'); }
+        function pharmField(id, label, placeholder, unit) { return `<label class="block text-sm font-medium text-slate-700 mb-1">${label}</label><div class="flex mb-3"><input id="pc_${id}" type="number" min="0" step="any" placeholder="${placeholder}" class="flex-1 p-3 border border-gray-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-teal-500"><span class="bg-slate-100 border border-l-0 border-gray-200 px-3 flex items-center rounded-r-xl text-sm text-slate-500">${unit}</span></div>`; }
+        function renderPharmacyCalculator() { const t=document.getElementById('pharmCalcType').value, f=document.getElementById('pharmCalcFields'); const fields={
+          bmi:pharmField('weight','Weight','e.g. 70','kg')+pharmField('height','Height','e.g. 170','cm'),
+          bsa:pharmField('weight','Weight','e.g. 70','kg')+pharmField('height','Height','e.g. 170','cm'),
+          crcl:pharmField('age','Age','e.g. 45','years')+pharmField('weight','Weight','e.g. 70','kg')+pharmField('scr','Serum creatinine','e.g. 1.0','mg/dL')+'<label class="block text-sm font-medium text-slate-700 mb-1">Sex</label><select id="pc_sex" class="w-full p-3 border border-gray-200 rounded-xl mb-3 bg-white"><option value="male">Male</option><option value="female">Female</option></select>',
+          ibw:pharmField('height','Height','e.g. 170','cm')+'<label class="block text-sm font-medium text-slate-700 mb-1">Sex</label><select id="pc_sex" class="w-full p-3 border border-gray-200 rounded-xl mb-3 bg-white"><option value="male">Male</option><option value="female">Female</option></select>',
+          adjbw:pharmField('actual','Actual body weight','e.g. 100','kg')+pharmField('ibw','Ideal body weight','e.g. 65','kg'),
+          tablet:pharmField('prescribed','Prescribed dose','e.g. 750','mg')+pharmField('strength','Strength per tablet','e.g. 250','mg/tablet'),
+          liquid:pharmField('prescribed','Prescribed dose','e.g. 250','mg')+pharmField('strength','Medicine strength','e.g. 125','mg')+pharmField('volume','Volume containing that strength','e.g. 5','mL'),
+          dilution:pharmField('stock','Stock concentration','e.g. 100','mg/mL')+pharmField('dose','Required drug amount','e.g. 500','mg')+pharmField('final','Desired final volume','e.g. 100','mL'),
+          dose:pharmField('weight','Patient weight','e.g. 25','kg')+pharmField('dose','Prescribed dose','e.g. 10','mg/kg')+pharmField('frequency','Doses per day','e.g. 3','doses/day'),
+          infusion:pharmField('volume','Total volume','e.g. 500','mL')+pharmField('time','Infusion time','e.g. 4','hours'),
+          drip:pharmField('volume','Total volume','e.g. 500','mL')+pharmField('time','Infusion time','e.g. 4','hours')+pharmField('drop','Drop factor','e.g. 20','drops/mL'),
+          fluid:pharmField('weight','Child weight','e.g. 20','kg'),
+          calcium:pharmField('calcium','Measured calcium','e.g. 8.0','mg/dL')+pharmField('albumin','Albumin','e.g. 3.0','g/dL'),
+          anion:pharmField('sodium','Sodium','e.g. 140','mEq/L')+pharmField('chloride','Chloride','e.g. 104','mEq/L')+pharmField('bicarb','Bicarbonate','e.g. 24','mEq/L'),
+          glucose:pharmField('glucose','Glucose','e.g. 100','mg/dL'),
+          unit:pharmField('mass','Mass','e.g. 500','mg')+'<label class="block text-sm font-medium text-slate-700 mb-1">Convert from</label><select id="pc_from" class="w-full p-3 border border-gray-200 rounded-xl mb-3 bg-white"><option value="mg">mg</option><option value="mcg">mcg</option><option value="g">g</option></select><label class="block text-sm font-medium text-slate-700 mb-1">Convert to</label><select id="pc_to" class="w-full p-3 border border-gray-200 rounded-xl mb-3 bg-white"><option value="mcg">mcg</option><option value="mg">mg</option><option value="g">g</option></select>',
+          clark:pharmField('weight','Child weight','e.g. 20','kg')+pharmField('adult','Usual adult dose','e.g. 500','mg')}; f.innerHTML=fields[t]+'<button onclick="calculatePharmacyTool()" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold">Calculate</button>'; document.getElementById('pharmCalcResult').className='hidden mt-4 rounded-xl p-4 text-center'; }
+        function calculatePharmacyTool(){const t=document.getElementById('pharmCalcType').value, v=id=>parseFloat(document.getElementById('pc_'+id)?.value), sex=document.getElementById('pc_sex')?.value; let text='',note=''; const good=(...x)=>x.every(n=>Number.isFinite(n)&&n>0); if(t==='bmi'){let w=v('weight'),h=v('height');if(!good(w,h))return toast('⚠️ Enter valid values','error');let r=w/(h/100)**2;text=`BMI: ${r.toFixed(1)} kg/m²`;note=r<18.5?'Underweight':r<25?'Normal range':r<30?'Overweight':'Obesity range';}if(t==='bsa'){let w=v('weight'),h=v('height');if(!good(w,h))return toast('⚠️ Enter valid values','error');text=`BSA: ${Math.sqrt(h*w/3600).toFixed(2)} m²`;note='Mosteller formula';}if(t==='crcl'){let a=v('age'),w=v('weight'),c=v('scr');if(!good(a,w,c))return toast('⚠️ Enter valid values','error');let r=((140-a)*w)/(72*c)*(sex==='female'?.85:1);text=`Estimated CrCl: ${r.toFixed(1)} mL/min`;note='Cockcroft–Gault equation';}if(t==='ibw'){let h=v('height');if(!good(h))return toast('⚠️ Enter valid values','error');let inches=h/2.54,r=(sex==='male'?50:45.5)+2.3*(inches-60);text=`IBW: ${Math.max(0,r).toFixed(1)} kg`;note='Devine formula';}if(t==='dose'){let w=v('weight'),d=v('dose'),f=v('frequency');if(!good(w,d,f))return toast('⚠️ Enter valid values','error');text=`Per dose: ${(w*d).toFixed(2)} mg`;note=`Total daily dose: ${(w*d*f).toFixed(2)} mg/day`;}if(t==='infusion'){let vol=v('volume'),time=v('time');if(!good(vol,time))return toast('⚠️ Enter valid values','error');text=`Rate: ${(vol/time).toFixed(1)} mL/hour`;note=`For ${vol} mL over ${time} hours`;}if(t==='clark'){let w=v('weight'),a=v('adult');if(!good(w,a))return toast('⚠️ Enter valid values','error');let r=a*(w*2.20462/150);text=`Child dose: ${r.toFixed(2)} mg`;note="Clark's rule — verify suitability clinically";}if(t==='adjbw'){let a=v('actual'),i=v('ibw');if(!good(a,i))return toast('⚠️ Enter valid values','error');text=`Adjusted body weight: ${(i+.4*(a-i)).toFixed(1)} kg`;note='AdjBW = IBW + 0.4 × (Actual − IBW)';}if(t==='tablet'){let p=v('prescribed'),st=v('strength');if(!good(p,st))return toast('⚠️ Enter valid values','error');text=`Give: ${(p/st).toFixed(2)} tablet(s)`;note=`Each tablet contains ${st} mg`;}if(t==='liquid'){let p=v('prescribed'),st=v('strength'),vol=v('volume');if(!good(p,st,vol))return toast('⚠️ Enter valid values','error');text=`Give: ${(p*vol/st).toFixed(2)} mL`;note=`Based on ${st} mg in ${vol} mL`;}if(t==='dilution'){let st=v('stock'),d=v('dose'),fin=v('final');if(!good(st,d,fin)||fin<d/st)return toast('⚠️ Enter valid values','error');let drug=d/st;text=`Withdraw: ${drug.toFixed(2)} mL stock`;note=`Add diluent: ${(fin-drug).toFixed(2)} mL (final volume ${fin} mL)`;}if(t==='drip'){let vol=v('volume'),time=v('time'),drop=v('drop');if(!good(vol,time,drop))return toast('⚠️ Enter valid values','error');text=`Drip rate: ${Math.round(vol*drop/(time*60))} drops/min`;note=`Also ${(vol/time).toFixed(1)} mL/hour`;}if(t==='fluid'){let w=v('weight');if(!good(w))return toast('⚠️ Enter valid weight','error');let r=w<=10?4:w<=20?40+2*(w-10):60+(w-20);text=`Maintenance rate: ${r.toFixed(0)} mL/hour`;note=`Approx. ${(r*24).toFixed(0)} mL per 24 hours (4–2–1 rule)`;}if(t==='calcium'){let c=v('calcium'),a=v('albumin');if(!good(c,a))return toast('⚠️ Enter valid values','error');text=`Corrected calcium: ${(c+.8*(4-a)).toFixed(2)} mg/dL`;note='Corrected Ca = measured Ca + 0.8 × (4 − albumin)';}if(t==='anion'){let na=v('sodium'),cl=v('chloride'),bi=v('bicarb');if(!good(na,cl,bi))return toast('⚠️ Enter valid values','error');text=`Anion gap: ${(na-cl-bi).toFixed(1)} mEq/L`;note='Na − (Cl + HCO₃)';}if(t==='glucose'){let g=v('glucose');if(!good(g))return toast('⚠️ Enter valid glucose','error');text=`${(g/18).toFixed(2)} mmol/L`;note=`${g} mg/dL ÷ 18`; }if(t==='unit'){let m=v('mass'),from=document.getElementById('pc_from').value,to=document.getElementById('pc_to').value;if(!good(m))return toast('⚠️ Enter valid mass','error');let mg=m*({mcg:.001,mg:1,g:1000}[from]);text=`${(mg/({mcg:.001,mg:1,g:1000}[to])).toFixed(4)} ${to}`;note=`Converted from ${m} ${from}`;}let el=document.getElementById('pharmCalcResult');el.className='mt-4 rounded-xl p-4 text-center bg-teal-50 border border-teal-200';el.innerHTML=`<div class="text-2xl font-bold text-teal-700">${text}</div><div class="text-sm text-slate-600 mt-1">${note}</div>`;}
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // BMI CALCULATOR
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function openBMICalculator() {
@@ -3704,5 +3740,5 @@
             document.getElementById('pwaInstallBanner').style.display = 'none';
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f97ad8fcb5eff5',t:'MTc4NDc5NzA3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1fa606f494d85c1',t:'MTc4NDgwNjQ3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
