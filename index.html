@@ -5,16 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     <title>Pharmacy Study Home</title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0d9488">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="PharmaStudy">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="PharmaStudy">
-    
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -322,19 +312,6 @@
         </div>
     </main>
     
-    <!-- PWA Install Banner -->
-    <div id="pwaInstallBanner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9998; background:white; border-top:2px solid #0d9488; padding:16px 20px; box-shadow:0 -4px 20px rgba(0,0,0,0.15); animation: fadeIn 0.3s ease;">
-        <div class="flex items-center gap-3">
-            <img src="icons/icon-192.png" alt="App Icon" style="width:48px;height:48px;border-radius:12px;flex-shrink:0;">
-            <div class="flex-1 min-w-0">
-                <div class="font-bold text-slate-800 text-sm">Install PharmaStudy</div>
-                <div class="text-xs text-slate-500">Add to home screen for quick access</div>
-            </div>
-            <button id="pwaInstallBtn" onclick="installPWA()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex-shrink-0">Install</button>
-            <button onclick="dismissInstallBanner()" class="text-slate-400 hover:text-slate-600 px-2 flex-shrink-0"><i class="fas fa-times"></i></button>
-        </div>
-    </div>
-
     <footer class="bg-white border-t py-4 text-center text-xs text-gray-400 font-medium">
         <i class="fas fa-notes-medical text-teal-500 mr-1"></i> Pharmacy Study Home · Cloud Sync
     </footer>
@@ -1124,6 +1101,8 @@
                 `;
             }
             
+            const calculatorHtml = isCalculatorPage(item) ? renderCalculatorHubHtml() : '';
+            
             document.getElementById('quickPageContent').innerHTML = `
                 <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-3xl p-8 mb-6 relative">
                     <div class="admin-controls absolute top-3 right-3 gap-1">
@@ -1151,6 +1130,8 @@
                         <i class="fas fa-chevron-right text-slate-300 ml-auto"></i>
                     </button>
                 </div>` : ''}
+                
+                ${calculatorHtml}
                 
                 ${categoriesHtml}
                 
@@ -3299,60 +3280,132 @@
             document.getElementById('mobileMenu').classList.toggle('hidden');
         }
         
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // BUILT-IN PHARMACY CALCULATORS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function isCalculatorPage(item) {
+            const t = (item?.title || '').toLowerCase();
+            return item?.id === 'qa3' || t.includes('calculator') || t.includes('calculators');
+        }
+
+        function renderCalculatorHubHtml() {
+            return `
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-6">
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fas fa-calculator text-teal-600"></i> Functional Pharmacy Calculators</h3>
+                            <p class="text-xs text-slate-500 mt-1">Enter values below. Results calculate instantly on this website.</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-5">
+                        ${calcButton('bmi','⚖️','BMI')}
+                        ${calcButton('crcl','🧪','CrCl')}
+                        ${calcButton('bsa','📏','BSA')}
+                        ${calcButton('drip','💧','IV Drip')}
+                        ${calcButton('calcium','🦴','Corrected Ca')}
+                        ${calcButton('anion','⚗️','Anion Gap')}
+                        ${calcButton('peddose','👶','Pediatric Dose')}
+                        ${calcButton('para','💊','Paracetamol')}
+                        ${calcButton('amox','🦠','Amoxicillin')}
+                        ${calcButton('insulin','💉','Insulin')}
+                    </div>
+                    <div id="calcPanel" class="border border-teal-100 rounded-2xl p-4 bg-slate-50">
+                        ${calculatorFormHtml('bmi')}
+                    </div>
+                    <div class="mt-3 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                        <b>Safety note:</b> These calculators are educational tools. Always verify units, patient factors, maximum doses, local guidelines, and prescriber orders before clinical use.
+                    </div>
+                </div>`;
+        }
+
+        function calcButton(id, icon, label) {
+            return `<button onclick="showCalculator('${id}')" class="bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 rounded-xl px-3 py-3 text-sm font-semibold transition"><span class="block text-xl mb-1">${icon}</span>${label}</button>`;
+        }
+
+        function showCalculator(type) {
+            const panel = document.getElementById('calcPanel');
+            if (!panel) return;
+            panel.innerHTML = calculatorFormHtml(type);
+        }
+
+        function inputRow(id, label, unit, value='') {
+            return `<label class="block"><span class="text-xs font-semibold text-slate-600">${label} ${unit ? '('+unit+')' : ''}</span><input id="${id}" type="number" step="any" value="${value}" oninput="runCurrentCalculator()" class="mt-1 w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"></label>`;
+        }
+        function selectRow(id, label, options) {
+            return `<label class="block"><span class="text-xs font-semibold text-slate-600">${label}</span><select id="${id}" onchange="runCurrentCalculator()" class="mt-1 w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">${options.map(o=>`<option value="${o}">${o}</option>`).join('')}</select></label>`;
+        }
+        function resultBox() {
+            return `<div id="calcResult" class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-slate-800 text-sm min-h-[70px]"><b>Result:</b> Enter values to calculate.</div>`;
+        }
+
+        function calculatorFormHtml(type) {
+            window.currentCalcType = type;
+            const forms = {
+                bmi: `<h4 class="font-bold text-slate-800 mb-3">⚖️ BMI Calculator</h4><div class="grid sm:grid-cols-2 gap-3">${inputRow('calc_weight','Weight','kg',70)}${inputRow('calc_height_m','Height','m',1.7)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
+                crcl: `<h4 class="font-bold text-slate-800 mb-3">🧪 Creatinine Clearance — Cockcroft-Gault</h4><div class="grid sm:grid-cols-2 gap-3">${inputRow('calc_age','Age','years',50)}${inputRow('calc_weight','Weight','kg',70)}${inputRow('calc_scr','Serum Creatinine','mg/dL',1)}${selectRow('calc_sex','Sex',['Male','Female'])}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
+                bsa: `<h4 class="font-bold text-slate-800 mb-3">📏 BSA — Mosteller</h4><div class="grid sm:grid-cols-2 gap-3">${inputRow('calc_weight','Weight','kg',70)}${inputRow('calc_height_cm','Height','cm',170)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
+                drip: `<h4 class="font-bold text-slate-800 mb-3">💧 IV Drip Rate</h4><div class="grid sm:grid-cols-3 gap-3">${inputRow('calc_vol','Volume','mL',1000)}${inputRow('calc_time','Time','hours',8)}${inputRow('calc_drop','Drop factor','gtt/mL',20)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
+                calcium: `<h4 class="font-bold text-slate-800 mb-3">🦴 Corrected Calcium</h4><div class="grid sm:grid-cols-2 gap-3">${inputRow('calc_ca','Measured calcium','mg/dL',8)}${inputRow('calc_albumin','Albumin','g/dL',3)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
+                anion: `<h4 class="font-bold text-slate-800 mb-3">⚗️ Anion Gap</h4><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3">${inputRow('calc_na','Sodium','mEq/L',140)}${inputRow('calc_cl','Chloride','mEq/L',104)}${inputRow('calc_hco3','Bicarbonate','mEq/L',24)}${inputRow('calc_albumin','Albumin','g/dL',4)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
+                peddose: `<h4 class="font-bold text-slate-800 mb-3">👶 Pediatric Dose</h4><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3">${inputRow('calc_weight','Weight','kg',20)}${inputRow('calc_mgkg','Dose','mg/kg/dose',10)}${inputRow('calc_freq','Frequency','doses/day',3)}${inputRow('calc_maxdose','Max per dose','mg',500)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
+                para: `<h4 class="font-bold text-slate-800 mb-3">💊 Paracetamol Dose</h4><div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3">${inputRow('calc_weight','Weight','kg',20)}${inputRow('calc_mgkg','Dose','mg/kg/dose',15)}${inputRow('calc_maxkg','Max daily','mg/kg/day',60)}${inputRow('calc_adultmax','Adult max','mg/day',4000)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
+                amox: `<h4 class="font-bold text-slate-800 mb-3">🦠 Amoxicillin Pediatric Dose</h4><div class="grid sm:grid-cols-2 md:grid-cols-5 gap-3">${inputRow('calc_weight','Weight','kg',20)}${inputRow('calc_mgkgday','Daily dose','mg/kg/day',50)}${inputRow('calc_freq','Frequency','doses/day',2)}${inputRow('calc_strength','Susp strength','mg/5mL',250)}${inputRow('calc_maxdaily','Max daily','mg/day',3000)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`,
+                insulin: `<h4 class="font-bold text-slate-800 mb-3">💉 Insulin Correction Dose</h4><div class="grid sm:grid-cols-2 md:grid-cols-5 gap-3">${inputRow('calc_current','Current BG','mg/dL',250)}${inputRow('calc_target','Target BG','mg/dL',120)}${inputRow('calc_factor','Correction factor','mg/dL/unit',50)}${inputRow('calc_carbs','Carbs','g',60)}${inputRow('calc_ratio','I:C ratio','g/unit',15)}</div>${resultBox()}<script>setTimeout(runCurrentCalculator,50)<\/script>`
+            };
+            return forms[type] || forms.bmi;
+        }
+
+        function val(id) { const el = document.getElementById(id); return el ? parseFloat(el.value) : NaN; }
+        function setResult(html) { const el = document.getElementById('calcResult'); if (el) el.innerHTML = html; }
+        function fmt(n, d=2) { return Number.isFinite(n) ? Number(n).toFixed(d).replace(/\.00$/,'') : ''; }
+
+        function runCurrentCalculator() {
+            const t = window.currentCalcType || 'bmi';
+            try {
+                if (t === 'bmi') {
+                    const w=val('calc_weight'), h=val('calc_height_m'); const bmi=w/(h*h);
+                    const cat=bmi<18.5?'Underweight':bmi<25?'Normal':bmi<30?'Overweight':'Obesity';
+                    setResult(`<b>BMI:</b> ${fmt(bmi)} kg/m²<br><b>Category:</b> ${cat}`);
+                } else if (t === 'crcl') {
+                    const age=val('calc_age'), w=val('calc_weight'), scr=val('calc_scr'); const sex=document.getElementById('calc_sex')?.value || 'Male';
+                    const crcl=((140-age)*w)/(72*scr)*(sex==='Female'?0.85:1);
+                    setResult(`<b>Creatinine Clearance:</b> ${fmt(crcl)} mL/min<br><span class="text-xs text-slate-600">Cockcroft-Gault estimate. Use clinical judgment for weight selection.</span>`);
+                } else if (t === 'bsa') {
+                    const w=val('calc_weight'), h=val('calc_height_cm'); const bsa=Math.sqrt((w*h)/3600);
+                    setResult(`<b>BSA:</b> ${fmt(bsa)} m²`);
+                } else if (t === 'drip') {
+                    const v=val('calc_vol'), time=val('calc_time'), drop=val('calc_drop');
+                    setResult(`<b>mL/hour:</b> ${fmt(v/time)} mL/hr<br><b>Drip rate:</b> ${fmt((v*drop)/(time*60),0)} gtt/min`);
+                } else if (t === 'calcium') {
+                    const ca=val('calc_ca'), alb=val('calc_albumin'); const corr=ca+0.8*(4-alb);
+                    const cat=corr<8.5?'Low':corr<=10.5?'Normal':'High';
+                    setResult(`<b>Corrected Calcium:</b> ${fmt(corr)} mg/dL<br><b>Interpretation:</b> ${cat}`);
+                } else if (t === 'anion') {
+                    const na=val('calc_na'), cl=val('calc_cl'), hco3=val('calc_hco3'), alb=val('calc_albumin'); const ag=na-(cl+hco3); const cag=ag+2.5*(4-alb);
+                    setResult(`<b>Anion Gap:</b> ${fmt(ag)} mEq/L<br><b>Albumin-corrected AG:</b> ${fmt(cag)} mEq/L`);
+                } else if (t === 'peddose') {
+                    const w=val('calc_weight'), dose=val('calc_mgkg'), freq=val('calc_freq'), max=val('calc_maxdose'); const calc=w*dose; const final=Math.min(calc,max);
+                    setResult(`<b>Dose per administration:</b> ${fmt(final)} mg<br><b>Total daily dose:</b> ${fmt(final*freq)} mg/day<br><span class="text-xs text-slate-600">Calculated dose before max check: ${fmt(calc)} mg</span>`);
+                } else if (t === 'para') {
+                    const w=val('calc_weight'), mgkg=val('calc_mgkg'), maxkg=val('calc_maxkg'), adultmax=val('calc_adultmax'); const dose=w*mgkg; const maxdaily=Math.min(w*maxkg,adultmax);
+                    setResult(`<b>Dose per dose:</b> ${fmt(dose)} mg<br><b>Maximum daily dose:</b> ${fmt(maxdaily)} mg/day<br><span class="text-xs text-rose-600">Check all products to avoid duplicate paracetamol.</span>`);
+                } else if (t === 'amox') {
+                    const w=val('calc_weight'), mgkgday=val('calc_mgkgday'), freq=val('calc_freq'), strength=val('calc_strength'), maxdaily=val('calc_maxdaily'); const daily=Math.min(w*mgkgday,maxdaily); const perdose=daily/freq; const ml=perdose/(strength/5);
+                    setResult(`<b>Daily dose:</b> ${fmt(daily)} mg/day<br><b>Dose per administration:</b> ${fmt(perdose)} mg<br><b>Volume per dose:</b> ${fmt(ml)} mL`);
+                } else if (t === 'insulin') {
+                    const cur=val('calc_current'), target=val('calc_target'), factor=val('calc_factor'), carbs=val('calc_carbs'), ratio=val('calc_ratio'); const corr=Math.max((cur-target)/factor,0); const meal=carbs/ratio;
+                    setResult(`<b>Correction dose:</b> ${fmt(corr)} units<br><b>Meal bolus:</b> ${fmt(meal)} units<br><b>Total estimated dose:</b> ${fmt(corr+meal)} units<br><span class="text-xs text-rose-600">Use only with a prescribed insulin plan.</span>`);
+                }
+            } catch(e) { setResult('<b>Result:</b> Please enter valid numbers.'); }
+        }
+
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // START APP
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         document.addEventListener('DOMContentLoaded', () => {
             init();
         });
-        
-        // Register Service Worker for PWA
-        let deferredPrompt = null;
-        
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then((reg) => console.log('✅ Service Worker registered:', reg.scope))
-                    .catch((err) => console.warn('⚠️ Service Worker registration failed:', err));
-            });
-        }
-        
-        // Capture the install prompt
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // Show install banner if not dismissed
-            if (!localStorage.getItem('psh_installDismissed')) {
-                setTimeout(() => {
-                    document.getElementById('pwaInstallBanner').style.display = 'block';
-                }, 3000);
-            }
-        });
-        
-        function installPWA() {
-            if (!deferredPrompt) {
-                toast('ℹ️ Open this site in Chrome/Safari to install', 'warning');
-                return;
-            }
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choice) => {
-                if (choice.outcome === 'accepted') {
-                    toast('✅ App installed!', 'success');
-                    document.getElementById('pwaInstallBanner').style.display = 'none';
-                }
-                deferredPrompt = null;
-            });
-        }
-        
-        function dismissInstallBanner() {
-            document.getElementById('pwaInstallBanner').style.display = 'none';
-            localStorage.setItem('psh_installDismissed', '1');
-        }
-        
-        // Hide banner if already installed (running in standalone mode)
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            document.getElementById('pwaInstallBanner').style.display = 'none';
-        }
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c6ded718eb8610',t:'MTc4NDI2NjM5Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f8652418f15ea6',t:'MTc4NDc4NTY5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
