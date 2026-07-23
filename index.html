@@ -951,18 +951,6 @@
                 qaList.appendChild(li);
             });
             
-            // Drive Files button (grid + list)
-            const driveBtn = document.createElement('button');
-            driveBtn.className = 'bg-white hover:bg-blue-50 border border-gray-200 rounded-2xl p-4 text-center transition card-hover';
-            driveBtn.innerHTML = `<div class="text-3xl mb-1">📁</div><div class="text-sm font-semibold text-slate-700">Drive Files</div>`;
-            driveBtn.onclick = () => navigateToDrive(GDRIVE_ROOT_FOLDER, 'Drive Files');
-            qaGrid.appendChild(driveBtn);
-            const driveLi = document.createElement('div');
-            driveLi.className = 'list-view-item';
-            driveLi.innerHTML = `<div class="list-icon">📁</div><div class="list-body"><div class="list-title">Drive Files</div><div class="list-sub">Browse all files</div></div><i class="fas fa-chevron-right text-slate-300"></i>`;
-            driveLi.onclick = () => navigateToDrive(GDRIVE_ROOT_FOLDER, 'Drive Files');
-            qaList.appendChild(driveLi);
-            
             if (isAdmin) {
                 const addBtn = document.createElement('button');
                 addBtn.className = 'bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl font-semibold transition text-sm flex items-center gap-2';
