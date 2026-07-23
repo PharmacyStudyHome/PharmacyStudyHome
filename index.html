@@ -383,8 +383,10 @@
             <input type="hidden" id="profEditId">
             <input id="profNameInput" type="text" placeholder="Prof Name (e.g. 1st Prof)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <input id="profIconInput" type="text" placeholder="Icon Emoji (e.g. 🌱)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="flex items-center gap-2 text-sm text-slate-600 mb-3 cursor-pointer"><input id="profIconInputEnabled" type="checkbox" checked class="w-4 h-4 accent-teal-600"> Show Prof Year icon</label>
             <input id="profDriveFolderInput" type="text" placeholder="Google Drive Folder ID (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <p class="text-xs text-slate-400 mb-4">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
+            <p class="text-xs text-slate-400 mb-3">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
+            <input id="profCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <div class="flex gap-3">
                 <button onclick="saveProf()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('profModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
@@ -399,8 +401,10 @@
             <input type="hidden" id="subjectProfId">
             <input id="subjectNameInput" type="text" placeholder="Subject Name" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <input id="subjectIconInput" type="text" placeholder="Icon Emoji (e.g. 📖)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="flex items-center gap-2 text-sm text-slate-600 mb-3 cursor-pointer"><input id="subjectIconInputEnabled" type="checkbox" checked class="w-4 h-4 accent-teal-600"> Show Subject icon</label>
             <input id="subjectDriveFolderInput" type="text" placeholder="Google Drive Folder ID (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <p class="text-xs text-slate-400 mb-4">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
+            <p class="text-xs text-slate-400 mb-3">Paste the folder ID from the Drive URL: drive.google.com/drive/folders/<b>THIS_PART</b></p>
+            <input id="subjectCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <div class="flex gap-3">
                 <button onclick="saveSubject()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('subjectModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
@@ -455,6 +459,7 @@
             <input type="hidden" id="qaEditId">
             <input id="qaTitleInput" type="text" placeholder="Title" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <input id="qaIconInput" type="text" placeholder="Icon Emoji (e.g. 📝)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="flex items-center gap-2 text-sm text-slate-600 mb-3 cursor-pointer"><input id="qaIconInputEnabled" type="checkbox" checked class="w-4 h-4 accent-teal-600"> Show Quick Access icon</label>
             <div class="flex gap-3">
                 <button onclick="saveQuickAccess()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('quickAccessModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
@@ -497,10 +502,14 @@
             <input type="hidden" id="catParentQaId">
             <input id="catTitleInput" type="text" placeholder="Category Title (e.g. Painkillers)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <input id="catIconInput" type="text" placeholder="Icon Emoji (e.g. 💊)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="flex items-center gap-2 text-sm text-slate-600 mb-3 cursor-pointer"><input id="catIconInputEnabled" type="checkbox" checked class="w-4 h-4 accent-teal-600"> Show Category icon</label>
             <input id="catSheetIdInput" type="text" placeholder="Google Sheet ID or full share link" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <p class="text-xs text-slate-400 mb-3">Paste the Sheet ID or full Google Sheets share link. Sheet must be shared as "Anyone with the link can view".</p>
             <input id="catGidInput" type="text" placeholder="Sheet GID (optional, default 0)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <p class="text-xs text-slate-400 mb-4">Find GID in the URL after #gid= (leave blank for first sheet)</p>
+            <p class="text-xs text-slate-400 mb-3">Find GID in the URL after #gid= (leave blank for first sheet)</p>
+            <input id="catCoverPhotoInput" type="text" placeholder="Cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="block w-full p-3 border-2 border-dashed border-teal-200 rounded-xl mb-2 cursor-pointer text-center text-sm font-semibold text-teal-700 hover:bg-teal-50"><i class="fas fa-upload mr-1"></i> Upload category cover photo <input id="catCoverPhotoFileInput" type="file" accept="image/*" class="hidden"></label>
+            <div id="catCoverPhotoPreview" style="text-align:center;margin-bottom:12px;"></div>
             <div class="flex gap-3">
                 <button onclick="saveCategory()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('categoryModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
@@ -517,10 +526,12 @@
             <input type="hidden" id="subCatParentCatId">
             <input id="subCatTitleInput" type="text" placeholder="Sub-Category Title (e.g. Paracetamol)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <input id="subCatIconInput" type="text" placeholder="Icon Emoji (e.g. 💊)" class="w-full p-3 border border-gray-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="flex items-center gap-2 text-sm text-slate-600 mb-3 cursor-pointer"><input id="subCatIconInputEnabled" type="checkbox" checked class="w-4 h-4 accent-teal-600"> Show Sub-Category icon</label>
             <input id="subCatSheetIdInput" type="text" placeholder="Google Sheet ID or full share link" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <p class="text-xs text-slate-400 mb-3">Paste the Sheet ID or full Google Sheets share link. Sheet must be shared as "Anyone with the link can view".</p>
             <input id="subCatGidInput" type="text" placeholder="Sheet GID (optional, default 0)" class="w-full p-3 border border-gray-200 rounded-xl mb-1 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <p class="text-xs text-slate-400 mb-4">Find GID in the URL after #gid= (leave blank for first sheet)</p>
+            <p class="text-xs text-slate-400 mb-3">Find GID in the URL after #gid= (leave blank for first sheet)</p>
+            <input id="subCatCoverPhotoInput" type="text" placeholder="Page cover photo URL (optional)" class="w-full p-3 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-teal-500">
             <div class="flex gap-3">
                 <button onclick="saveSubCategory()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold transition">Save</button>
                 <button onclick="closeModal('subCategoryModal')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition">Cancel</button>
@@ -941,7 +952,7 @@
                 btn.innerHTML = `
                     ${item.coverPhoto ? '<div class="absolute inset-0 bg-white/80"></div>' : ''}
                     <div class="relative z-10">
-                    <div class="text-3xl mb-1">${item.icon || '📌'}</div>
+                    <div class="text-3xl mb-1">${item.showIcon !== false ? (item.icon || '📌') : ''}</div>
                     <div class="text-sm font-semibold text-slate-700">${item.title}</div>
                     </div>
                     <div class="admin-controls absolute top-1 right-1 gap-1">
@@ -958,7 +969,7 @@
                 const li = document.createElement('div');
                 li.className = 'list-view-item';
                 li.innerHTML = `
-                    <div class="list-icon">${item.icon || '📌'}</div>
+                    <div class="list-icon">${item.showIcon !== false ? (item.icon || '📌') : ''}</div>
                     <div class="list-body"><div class="list-title">${item.title}</div><div class="list-sub">Quick Access</div></div>
                     <div class="admin-controls gap-1"><button onclick="event.stopPropagation();openCoverPhotoModal('${item.id}')" title="Set cover photo" class="bg-violet-500 text-white w-6 h-6 rounded-full text-xs hover:bg-violet-600">🖼️</button><button onclick="event.stopPropagation();openEditQuickAccessModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button></div><i class="fas fa-chevron-right text-slate-300"></i>
                 `;
@@ -985,9 +996,10 @@
             profs.forEach(prof => {
                 // Grid card
                 const btn = document.createElement('button');
-                btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-6 text-center transition card-hover relative';
+                btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-6 text-center transition card-hover relative overflow-hidden';
+                if (prof.coverPhoto) btn.style.cssText = `background-image:linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.78)),url('${prof.coverPhoto}');background-size:cover;background-position:center;`;
                 btn.innerHTML = `
-                    <div class="text-4xl mb-2">${prof.icon || '📚'}</div>
+                    <div class="text-4xl mb-2">${prof.showIcon !== false ? (prof.icon || '📚') : ''}</div>
                     <div class="font-bold text-slate-800">${prof.title}</div>
                     ${prof.driveFolder ? '<div class="text-xs text-blue-500 mt-1">📁 Drive linked</div>' : ''}
                     <div class="admin-controls absolute top-1 right-1 gap-1">
@@ -1001,7 +1013,7 @@
                 const li = document.createElement('div');
                 li.className = 'list-view-item';
                 li.innerHTML = `
-                    <div class="list-icon">${prof.icon || '📚'}</div>
+                    <div class="list-icon">${prof.showIcon !== false ? (prof.icon || '📚') : ''}</div>
                     <div class="list-body"><div class="list-title">${prof.title}</div><div class="list-sub">Professional Year${prof.driveFolder ? ' · 📁 Drive' : ''}</div></div>
                     <i class="fas fa-chevron-right text-slate-300"></i>
                 `;
@@ -1012,7 +1024,9 @@
         
         function renderProfPage() {
             const prof = profs.find(p => p.id === currentProfId);
-            document.getElementById('profPageTitle').textContent = `${prof?.icon || '📚'} ${prof?.title || 'Prof'}`;
+            const profTitleEl = document.getElementById('profPageTitle');
+            profTitleEl.textContent = `${prof?.icon || '📚'} ${prof?.title || 'Prof'}`;
+            profTitleEl.style.cssText = prof?.coverPhoto ? `background-image:linear-gradient(rgba(13,148,136,.78),rgba(15,118,110,.85)),url('${prof.coverPhoto}');background-size:cover;background-position:center;color:white;padding:24px;border-radius:20px;` : '';
             
             const grid = document.getElementById('profSubjectsGrid');
             const list = document.getElementById('profSubjectsList');
@@ -1060,9 +1074,10 @@
                 subList.forEach((sub, idx) => {
                     // Grid
                     const btn = document.createElement('button');
-                    btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-5 text-center transition card-hover relative';
+                    btn.className = 'bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-5 text-center transition card-hover relative overflow-hidden';
+                    if (sub.coverPhoto) btn.style.cssText = `background-image:linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.78)),url('${sub.coverPhoto}');background-size:cover;background-position:center;`;
                     btn.innerHTML = `
-                        <div class="text-3xl mb-1">${sub.icon || '📖'}</div>
+                        <div class="text-3xl mb-1">${sub.showIcon !== false ? (sub.icon || '📖') : ''}</div>
                         <div class="font-semibold text-slate-800">${sub.title}</div>
                         ${sub.driveFolder ? '<div class="text-xs text-blue-500 mt-1">📁 Drive</div>' : ''}
                         <div class="admin-controls absolute top-1 right-1 gap-1">
@@ -1076,7 +1091,7 @@
                     // List
                     const li = document.createElement('div');
                     li.className = 'list-view-item';
-                    li.innerHTML = `<div class="list-icon">${sub.icon || '📖'}</div><div class="list-body"><div class="list-title">${sub.title}</div><div class="list-sub">Subject${sub.driveFolder ? ' · 📁 Drive' : ''}</div></div><i class="fas fa-chevron-right text-slate-300"></i>`;
+                    li.innerHTML = `<div class="list-icon">${sub.showIcon !== false ? (sub.icon || '📖') : ''}</div><div class="list-body"><div class="list-title">${sub.title}</div><div class="list-sub">Subject${sub.driveFolder ? ' · 📁 Drive' : ''}</div></div><i class="fas fa-chevron-right text-slate-300"></i>`;
                     li.onclick = () => navigateToSubject(sub.id);
                     list.appendChild(li);
                 });
@@ -1100,7 +1115,9 @@
                 }
             }
             
-            document.getElementById('subjectPageTitle').textContent = `${subjectIcon} ${subjectName}`;
+            const subjectTitleEl = document.getElementById('subjectPageTitle');
+            subjectTitleEl.textContent = `${subjectIcon} ${subjectName}`;
+            subjectTitleEl.style.cssText = subjectObj?.coverPhoto ? `background-image:linear-gradient(rgba(13,148,136,.78),rgba(15,118,110,.85)),url('${subjectObj.coverPhoto}');background-size:cover;background-position:center;color:white;padding:24px;border-radius:20px;` : '';
             
             const subjectDriveSectionEl = document.getElementById('subjectDriveSection');
             if (subjectObj && subjectObj.driveFolder) {
@@ -1171,9 +1188,10 @@
                 let catCardsHtml = '';
                 categories.forEach((cat, catIdx) => {
                     catCardsHtml += `
-                        <div class="bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-5 transition card-hover relative cursor-pointer group" onclick="navigateToCategory('${qaId}', '${cat.id}')">
-                            <div class="text-3xl mb-2">${cat.icon || '📊'}</div>
-                            <div class="font-semibold text-slate-800 text-sm">${cat.title}</div>
+                        <div class="bg-white hover:bg-teal-50 border border-gray-200 rounded-2xl p-5 transition card-hover relative cursor-pointer group overflow-hidden" onclick="navigateToCategory('${qaId}', '${cat.id}')" ${cat.coverPhoto ? `style="background-image:url('${cat.coverPhoto}');background-size:cover;background-position:center;"` : ''}>
+                            ${cat.coverPhoto ? '<div class="absolute inset-0 bg-white/75"></div>' : ''}
+                            <div class="relative z-10 text-3xl mb-2">${cat.showIcon !== false ? (cat.icon || '📊') : ''}</div>
+                            <div class="relative z-10 font-semibold text-slate-800 text-sm">${cat.title}</div>
                             
                             <div class="admin-controls absolute top-1 right-1 gap-1">
                                 <button onclick="event.stopPropagation();moveCategory('${qaId}','${cat.id}','up')" ${catIdx === 0 ? 'disabled style="opacity:0.3"' : ''} class="bg-slate-500 text-white w-6 h-6 rounded-full text-xs hover:bg-slate-600">⬆️</button>
@@ -1213,7 +1231,7 @@
                         <button onclick="deleteQuickAccess('${qaId}')" class="bg-red-500/80 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs">🗑️</button>
                     </div>
                     <div class="flex items-center gap-3">
-                        <div class="text-3xl">${item.icon || '📌'}</div>
+                        <div class="text-3xl">${item.showIcon !== false ? (item.icon || '📌') : ''}</div>
                         <h2 class="text-lg font-bold">${item.title}</h2>
                     </div>
                     <div class="admin-controls mt-2">
@@ -1333,7 +1351,7 @@
                 subCats.forEach((sc, scIdx) => {
                     subCards += `
                         <div class="bg-white hover:bg-indigo-50 border border-indigo-200 rounded-2xl p-4 transition card-hover relative cursor-pointer" onclick="navigateToSubCategory('${qaId}','${catId}','${sc.id}')">
-                            <div class="text-2xl mb-1">${sc.icon || '📋'}</div>
+                            <div class="text-2xl mb-1">${sc.showIcon !== false ? (sc.icon || '📋') : ''}</div>
                             <div class="font-semibold text-slate-800 text-xs">${sc.title}</div>
                             
                             <div class="admin-controls absolute top-1 right-1 gap-1">
@@ -1374,12 +1392,12 @@
             }
             
             document.getElementById('categoryPageContent').innerHTML = `
-                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-3xl p-8 mb-6 relative">
+                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-3xl p-8 mb-6 relative overflow-hidden" ${cat.coverPhoto ? `style="background-image:linear-gradient(rgba(67,56,202,.72),rgba(49,46,129,.82)),url('${cat.coverPhoto}');background-size:cover;background-position:center;"` : ''}>
                     <div class="admin-controls absolute top-3 right-3 gap-1">
                         <button onclick="openEditCategoryModal('${qaId}','${catId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl text-sm">✏️ Edit</button>
                         <button onclick="deleteCategory('${qaId}','${catId}')" class="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-xl text-sm">🗑️ Delete</button>
                     </div>
-                    <div class="text-5xl mb-3">${cat.icon || '📊'}</div>
+                    <div class="text-5xl mb-3">${cat.showIcon !== false ? (cat.icon || '📊') : ''}</div>
                     <h2 class="text-2xl font-bold">${cat.title}</h2>
                     ${cat.sheetId ? '' : ''}
                 </div>
@@ -1459,8 +1477,10 @@
             document.getElementById('subCatParentCatId').value = catId;
             document.getElementById('subCatTitleInput').value = '';
             document.getElementById('subCatIconInput').value = '';
+            document.getElementById('subCatIconInputEnabled').checked = true;
             document.getElementById('subCatSheetIdInput').value = '';
             document.getElementById('subCatGidInput').value = '';
+            document.getElementById('subCatCoverPhotoInput').value = '';
             openModal('subCategoryModal');
         }
         
@@ -1475,8 +1495,10 @@
             document.getElementById('subCatParentCatId').value = catId;
             document.getElementById('subCatTitleInput').value = sc.title || '';
             document.getElementById('subCatIconInput').value = sc.icon || '';
+            document.getElementById('subCatIconInputEnabled').checked = sc.showIcon !== false;
             document.getElementById('subCatSheetIdInput').value = sc.sheetId || '';
             document.getElementById('subCatGidInput').value = sc.sheetGid || '';
+            document.getElementById('subCatCoverPhotoInput').value = sc.coverPhoto || '';
             openModal('subCategoryModal');
         }
         
@@ -1486,8 +1508,10 @@
             const catId = document.getElementById('subCatParentCatId').value;
             const title = document.getElementById('subCatTitleInput').value.trim();
             const icon = document.getElementById('subCatIconInput').value.trim() || '📋';
+            const showIcon = document.getElementById('subCatIconInputEnabled').checked;
             const rawSheetInput = document.getElementById('subCatSheetIdInput').value.trim();
             const gid = document.getElementById('subCatGidInput').value.trim() || '0';
+            const coverPhoto = document.getElementById('subCatCoverPhotoInput').value.trim();
             
             if (!title) { toast('⚠️ Please enter a title', 'error'); return; }
             if (!catId) { toast('⚠️ Parent category missing', 'error'); return; }
@@ -1498,9 +1522,10 @@
                 sheetId = idMatch ? idMatch[1] : rawSheetInput;
             }
             
+            const existingSubCategory = id ? (quickSubCategories[catId] || []).find(s => s.id === id) : null;
             const scData = {
                 id: id || 'sc_' + Date.now(),
-                title, icon, sheetId, sheetGid: gid,
+                title, icon, showIcon, sheetId, sheetGid: gid, coverPhoto: coverPhoto || existingSubCategory?.coverPhoto || '',
                 order: id ? ((quickSubCategories[catId] || []).find(s => s.id === id)?.order ?? 0) : (quickSubCategories[catId] || []).length
             };
             
@@ -1592,12 +1617,12 @@
             }
             
             document.getElementById('subCategoryPageContent').innerHTML = `
-                <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-3xl p-8 mb-6 relative">
+                <div class="bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-3xl p-8 mb-6 relative" ${sc.coverPhoto ? `style="background-image:linear-gradient(rgba(13,148,136,.72),rgba(15,118,110,.82)),url('${sc.coverPhoto}');background-size:cover;background-position:center;"` : ''}>
                     <div class="admin-controls absolute top-3 right-3 gap-1">
                         <button onclick="openEditSubCategoryModal('${qaId}','${catId}','${scId}')" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl text-sm">✏️ Edit</button>
                         <button onclick="deleteSubCategory('${catId}','${scId}')" class="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-xl text-sm">🗑️ Delete</button>
                     </div>
-                    <div class="text-5xl mb-3">${sc.icon || '📋'}</div>
+                    <div class="text-5xl mb-3">${sc.showIcon !== false ? (sc.icon || '📋') : ''}</div>
                     <h2 class="text-2xl font-bold">${sc.title}</h2>
                     ${sc.sheetId ? '' : ''}
                 </div>
@@ -1620,8 +1645,11 @@
             document.getElementById('catParentQaId').value = parentQaId;
             document.getElementById('catTitleInput').value = '';
             document.getElementById('catIconInput').value = '';
+            document.getElementById('catIconInputEnabled').checked = true;
             document.getElementById('catSheetIdInput').value = '';
             document.getElementById('catGidInput').value = '';
+            document.getElementById('catCoverPhotoInput').value = '';
+            updateCategoryCoverPreview('');
             openModal('categoryModal');
         }
         
@@ -1635,6 +1663,7 @@
             document.getElementById('catParentQaId').value = parentQaId;
             document.getElementById('catTitleInput').value = cat.title || '';
             document.getElementById('catIconInput').value = cat.icon || '';
+            document.getElementById('catIconInputEnabled').checked = cat.showIcon !== false;
             
             // Show full sheet URL or just ID
             if (cat.sheetId) {
@@ -1643,6 +1672,8 @@
                 document.getElementById('catSheetIdInput').value = '';
             }
             document.getElementById('catGidInput').value = cat.sheetGid || '';
+            document.getElementById('catCoverPhotoInput').value = cat.coverPhoto || '';
+            updateCategoryCoverPreview(cat.coverPhoto || '');
             openModal('categoryModal');
         }
         
@@ -1651,8 +1682,10 @@
             const parentQaId = document.getElementById('catParentQaId').value;
             const title = document.getElementById('catTitleInput').value.trim();
             const icon = document.getElementById('catIconInput').value.trim() || '📊';
+            const showIcon = document.getElementById('catIconInputEnabled').checked;
             const rawSheetInput = document.getElementById('catSheetIdInput').value.trim();
             const gid = document.getElementById('catGidInput').value.trim() || '0';
+            const coverPhoto = document.getElementById('catCoverPhotoInput').value.trim();
             
             if (!title || !parentQaId) {
                 toast('⚠️ Please enter a title', 'error');
@@ -1669,9 +1702,10 @@
             const catData = {
                 id: id || 'cat_' + Date.now(),
                 title,
-                icon,
+                icon, showIcon,
                 sheetId,
                 sheetGid: gid,
+                coverPhoto,
                 order: id ? ((quickCategories[parentQaId] || []).find(c => c.id === id)?.order ?? 0) : (quickCategories[parentQaId] || []).length
             };
             
@@ -2339,7 +2373,9 @@
             document.getElementById('profEditId').value = '';
             document.getElementById('profNameInput').value = '';
             document.getElementById('profIconInput').value = '';
+            document.getElementById('profIconInputEnabled').checked = true;
             document.getElementById('profDriveFolderInput').value = '';
+            document.getElementById('profCoverPhotoInput').value = '';
             openModal('profModal');
         }
         
@@ -2351,7 +2387,9 @@
             document.getElementById('profEditId').value = id;
             document.getElementById('profNameInput').value = prof.title;
             document.getElementById('profIconInput').value = prof.icon || '';
+            document.getElementById('profIconInputEnabled').checked = prof.showIcon !== false;
             document.getElementById('profDriveFolderInput').value = prof.driveFolder || '';
+            document.getElementById('profCoverPhotoInput').value = prof.coverPhoto || '';
             openModal('profModal');
         }
         
@@ -2359,7 +2397,9 @@
             const id = document.getElementById('profEditId').value;
             const title = document.getElementById('profNameInput').value.trim();
             const icon = document.getElementById('profIconInput').value.trim() || '📚';
+            const showIcon = document.getElementById('profIconInputEnabled').checked;
             const driveFolder = document.getElementById('profDriveFolderInput').value.trim();
+            const coverPhoto = document.getElementById('profCoverPhotoInput').value.trim();
             
             if (!title) { 
                 toast('⚠️ Please enter a title', 'error'); 
@@ -2369,8 +2409,10 @@
             // Find existing prof to preserve driveFolders
             const existingProf = id ? profs.find(p => p.id === id) : null;
             
-            const profData = { id: id || 'p' + Date.now(), title, icon };
+            const profData = { id: id || 'p' + Date.now(), title, icon, showIcon };
             if (driveFolder) profData.driveFolder = driveFolder;
+            if (coverPhoto) profData.coverPhoto = coverPhoto;
+            else if (existingProf?.coverPhoto) profData.coverPhoto = existingProf.coverPhoto;
             
             // CRITICAL: Preserve driveFolders array when editing
             if (existingProf && existingProf.driveFolders) {
@@ -2438,7 +2480,9 @@
             document.getElementById('subjectProfId').value = currentProfId || '';
             document.getElementById('subjectNameInput').value = '';
             document.getElementById('subjectIconInput').value = '';
+            document.getElementById('subjectIconInputEnabled').checked = true;
             document.getElementById('subjectDriveFolderInput').value = '';
+            document.getElementById('subjectCoverPhotoInput').value = '';
             openModal('subjectModal');
         }
         
@@ -2451,7 +2495,9 @@
             document.getElementById('subjectProfId').value = profId;
             document.getElementById('subjectNameInput').value = sub.title;
             document.getElementById('subjectIconInput').value = sub.icon || '';
+            document.getElementById('subjectIconInputEnabled').checked = sub.showIcon !== false;
             document.getElementById('subjectDriveFolderInput').value = sub.driveFolder || '';
+            document.getElementById('subjectCoverPhotoInput').value = sub.coverPhoto || '';
             openModal('subjectModal');
         }
         
@@ -2460,15 +2506,20 @@
             const profId = document.getElementById('subjectProfId').value;
             const title = document.getElementById('subjectNameInput').value.trim();
             const icon = document.getElementById('subjectIconInput').value.trim() || '📖';
+            const showIcon = document.getElementById('subjectIconInputEnabled').checked;
             const driveFolder = document.getElementById('subjectDriveFolderInput').value.trim();
+            const coverPhoto = document.getElementById('subjectCoverPhotoInput').value.trim();
             
             if (!title || !profId) { 
                 toast('⚠️ Please fill in all fields', 'error'); 
                 return; 
             }
             
-            const subData = { id: id || 's' + Date.now(), title, icon };
+            const existingSubject = id ? subjects[profId]?.find(s => s.id === id) : null;
+            const subData = { id: id || 's' + Date.now(), title, icon, showIcon };
             if (driveFolder) subData.driveFolder = driveFolder;
+            if (coverPhoto) subData.coverPhoto = coverPhoto;
+            else if (existingSubject?.coverPhoto) subData.coverPhoto = existingSubject.coverPhoto;
             
             try {
                 if (firebaseReady) {
@@ -2775,6 +2826,7 @@
             document.getElementById('qaEditId').value = '';
             document.getElementById('qaTitleInput').value = '';
             document.getElementById('qaIconInput').value = '';
+            document.getElementById('qaIconInputEnabled').checked = true;
             openModal('quickAccessModal');
         }
         
@@ -2786,6 +2838,7 @@
             document.getElementById('qaEditId').value = id;
             document.getElementById('qaTitleInput').value = item.title;
             document.getElementById('qaIconInput').value = item.icon || '';
+            document.getElementById('qaIconInputEnabled').checked = item.showIcon !== false;
             openModal('quickAccessModal');
         }
         
@@ -2793,6 +2846,7 @@
             const id = document.getElementById('qaEditId').value;
             const title = document.getElementById('qaTitleInput').value.trim();
             const icon = document.getElementById('qaIconInput').value.trim() || '📌';
+            const showIcon = document.getElementById('qaIconInputEnabled').checked;
             
             if (!title) { 
                 toast('⚠️ Please enter a title', 'error'); 
@@ -2800,7 +2854,7 @@
             }
             
             const existing = id ? quickAccess.find(q => q.id === id) : null;
-            const qaData = { ...(existing || {}), id: id || 'qa' + Date.now(), title, icon };
+            const qaData = { ...(existing || {}), id: id || 'qa' + Date.now(), title, icon, showIcon };
             if (!existing) qaData.order = quickAccess.length;
             
             try {
@@ -3387,6 +3441,10 @@
             reader.readAsDataURL(file);
         }
 
+        function updateCategoryCoverPreview(url) { document.getElementById('catCoverPhotoPreview').innerHTML = url ? '<img src="' + url + '" style="height:100px;width:100%;object-fit:cover;border-radius:12px;" onerror="this.style.display=\'none\'">' : ''; }
+        document.getElementById('catCoverPhotoInput').addEventListener('input', function() { updateCategoryCoverPreview(this.value); });
+        document.getElementById('catCoverPhotoFileInput').addEventListener('change', function() { imageFileToDataUrl(this.files[0], 1000, url => { document.getElementById('catCoverPhotoInput').value = url; updateCategoryCoverPreview(url); }); });
+
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // LOGO FUNCTIONS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3634,5 +3692,5 @@
             document.getElementById('pwaInstallBanner').style.display = 'none';
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f94ef24c908567',t:'MTc4NDc5NTI3Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f9658e686b03e7',t:'MTc4NDc5NjE5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
