@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <title>Pharmacy Study Home</title>
     
     <!-- PWA Manifest -->
@@ -134,7 +134,7 @@
     </style>
 </head>
 <body>
-    <div id="toast"></div>
+    <div id="toast"></div><div id="offlineBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:100000;background:#334155;color:white;text-align:center;padding:8px;font-size:12px;font-weight:600;">📴 Offline mode — saved pages and files remain available.</div>
     
     <!-- Loading Screen -->
     <div id="loadingScreen" style="display:flex;position:fixed;inset:0;z-index:99999;background:#0d1b2a;">
@@ -162,7 +162,7 @@
                     <button onclick="goHome()" class="font-medium text-slate-600 hover:text-teal-600 transition-colors text-sm"><i class="fas fa-home mr-1"></i> Home</button>
                     <button onclick="toggleSearch()" class="font-medium text-slate-600 hover:text-teal-600 transition-colors text-sm"><i class="fas fa-search mr-1"></i> Search</button>
                     <button onclick="showPage('about')" class="font-medium text-slate-600 hover:text-teal-600 transition-colors text-sm"><i class="fas fa-info-circle mr-1"></i> About</button>
-                    <div class="relative group"><button class="font-medium text-slate-600 hover:text-teal-600 transition-colors text-sm"><i class="fas fa-ellipsis-h mr-1"></i> More</button><div class="hidden group-hover:block absolute right-0 top-7 bg-white border border-slate-200 rounded-xl shadow-lg p-2 w-40"><button onclick="changeAppZoom(-.1)" class="block w-full text-left p-2 text-sm hover:bg-slate-50">A− Zoom out</button><button onclick="changeAppZoom(.1)" class="block w-full text-left p-2 text-sm hover:bg-slate-50">A+ Zoom in</button><button onclick="continueReading()" class="block w-full text-left p-2 text-sm hover:bg-slate-50">📖 Continue</button></div></div>
+                    <div class="relative group"><button class="font-medium text-slate-600 hover:text-teal-600 transition-colors text-sm"><i class="fas fa-ellipsis-h mr-1"></i> More</button><div class="hidden group-hover:block absolute right-0 top-7 bg-white border border-slate-200 rounded-xl shadow-lg p-2 w-40"><button onclick="changeAppZoom(-.1)" class="block w-full text-left p-2 text-sm hover:bg-slate-50">A− Zoom out</button><button onclick="changeAppZoom(.1)" class="block w-full text-left p-2 text-sm hover:bg-slate-50">A+ Zoom in</button><button onclick="continueReading()" class="block w-full text-left p-2 text-sm hover:bg-slate-50">📖 Continue</button><button onclick="saveCurrentPageOffline()" class="block w-full text-left p-2 text-sm hover:bg-slate-50">📥 Save page offline</button></div></div>
                     <div class="flex bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
                         <button onclick="setViewMode('grid')" id="viewGridBtn" class="px-3 py-1.5 text-sm font-semibold transition bg-teal-600 text-white"><i class="fas fa-th-large"></i></button>
                         <button onclick="setViewMode('list')" id="viewListBtn" class="px-3 py-1.5 text-sm font-semibold transition bg-white text-slate-500"><i class="fas fa-list"></i></button>
@@ -822,6 +822,7 @@
         async function init() {
             loadFromLocalStorage();
             applyAppZoom();
+            updateOfflineStatus();
             
             document.getElementById('appContent').style.display = 'none';
             document.getElementById('loadingScreen').style.display = 'flex';
@@ -1203,7 +1204,7 @@
                     if (item.type === 'note') {
                         return `<div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 relative"><h4 class="font-bold text-slate-800 mb-2">${item.title}</h4><p class="text-slate-600 text-sm whitespace-pre-line">${item.content || ''}</p><div class="admin-controls absolute top-2 right-2 gap-1"><button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button><button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button></div></div>`;
                     } else if (item.type === 'file') {
-                        return `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" id="card-${item.id}"><div class="p-5 flex items-center justify-between"><div class="flex items-center gap-3 cursor-pointer" onclick="togglePreview('${item.id}', '${item.url || ''}')"><div class="text-3xl">📄</div><div><h4 class="font-semibold text-slate-800 hover:text-teal-600 hover:underline">${item.title}</h4><span class="text-xs text-gray-500">${item.fileType || 'PDF'} · ${item.fileSize || 'N/A'}</span></div></div><div class="flex gap-2 items-center flex-wrap justify-end"><button onclick="togglePreview('${item.id}', '${item.url || ''}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-eye"></i> Preview</button><button onclick="saveFileOffline('${item.url || ''}','${item.title.replace(/'/g,"\'")}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-download"></i> Offline</button><a href="${item.url || '#'}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-download"></i> Download</a><div class="admin-controls gap-1"><button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button><button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button></div></div></div><div id="preview-${item.id}" style="display:none;"><div class="border-t border-gray-100 bg-gray-50 px-4 py-2 flex justify-between items-center"><span class="text-xs text-slate-500 font-medium">📖 Preview</span><button onclick="togglePreview('${item.id}', '${item.url || ''}')" class="text-xs text-slate-400 hover:text-slate-600">✕ Close</button></div><div id="preview-frame-${item.id}" class="w-full" style="height:75vh;"></div></div></div>`;
+                        return `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" id="card-${item.id}"><div class="p-5 flex items-center justify-between"><div class="flex items-center gap-3 cursor-pointer" onclick="togglePreview('${item.id}', '${item.url || ''}')"><div class="text-3xl">📄</div><div><h4 class="font-semibold text-slate-800 hover:text-teal-600 hover:underline">${item.title}</h4><span class="text-xs text-gray-500">${item.fileType || 'PDF'} · ${item.fileSize || 'N/A'}</span></div></div><div class="flex gap-2 items-center flex-wrap justify-end"><button onclick="togglePreview('${item.id}', '${item.url || ''}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-eye"></i> Preview</button><button onclick="saveFileOffline('${item.url || ''}','${item.title.replace(/'/g,"\'")}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-download"></i> Offline</button><a href="${item.url || '#'}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-download"></i> Download</a><div class="admin-controls gap-1"><button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button><button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button></div></div></div><div id="preview-${item.id}" style="display:none;"><div class="border-t border-gray-100 bg-gray-50 px-4 py-2 flex justify-between items-center"><span class="text-xs text-slate-500 font-medium">📖 Preview</span><div class="flex gap-3"><button onclick="openFullscreenPreview('${item.url || ''}')" class="text-xs text-teal-600 font-semibold">⛶ Full screen</button><button onclick="togglePreview('${item.id}', '${item.url || ''}')" class="text-xs text-slate-400 hover:text-slate-600">✕ Close</button></div></div><div id="preview-frame-${item.id}" class="w-full" style="height:75vh;"></div></div></div>`;
                     } else if (item.type === 'link') {
                         return `<div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center justify-between relative"><div class="flex items-center gap-3"><div class="text-3xl">🔗</div><div><h4 class="font-semibold text-slate-800">${item.title}</h4><span class="text-xs text-gray-500">${item.url || ''}</span></div></div><div class="flex gap-2 items-center"><a href="${item.url || '#'}" target="_blank" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"><i class="fas fa-external-link-alt"></i> Open</a><div class="admin-controls gap-1"><button onclick="openEditResourceModal('${item.id}')" class="bg-blue-500 text-white w-6 h-6 rounded-full text-xs hover:bg-blue-600">✏️</button><button onclick="deleteResource('${item.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs hover:bg-red-600">🗑️</button></div></div></div>`;
                     }
@@ -2398,6 +2399,12 @@
         function openAboutModal() { document.getElementById('aboutDescriptionInput').value=aboutContent.description || document.getElementById('aboutDescription').textContent; openModal('aboutModal'); }
         async function saveAboutContent() { const description=document.getElementById('aboutDescriptionInput').value.trim(); if(!description)return; aboutContent={description}; if(firebaseReady) await db.ref('aboutContent').set(aboutContent); document.getElementById('aboutDescription').textContent=description; closeModal('aboutModal'); toast('About page updated','success'); }
 
+        // Offline page support: save a readable copy of the current page and show offline status.
+        function offlinePageKey() { return 'psh_offline_page_' + readingProgressKey(); }
+        function saveCurrentPageOffline() { const page=document.getElementById('page-'+currentPage); if(!page){toast('Nothing to save on this page','warning');return;} try { localStorage.setItem(offlinePageKey(), page.innerHTML); localStorage.setItem('psh_offline_lastPage', currentPage); toast('✅ Current page saved for offline reading','success'); } catch(e) { toast('Offline storage is full','error'); } }
+        function updateOfflineStatus() { const el=document.getElementById('offlineBanner'); if(el) el.style.display=navigator.onLine?'none':'block'; }
+        window.addEventListener('online', updateOfflineStatus); window.addEventListener('offline', updateOfflineStatus);
+
         // Selected files are stored in browser Cache Storage for offline viewing.
         async function saveFileOffline(url,title){ if(!url){toast('No file URL','error');return;} try{const cache=await caches.open('psh-offline-files');const res=await fetch(url,{mode:'cors'});if(!res.ok)throw new Error();await cache.put(url,res.clone());let items=JSON.parse(localStorage.getItem('psh_offlineFiles')||'[]').filter(x=>x.url!==url);items.unshift({url,title});localStorage.setItem('psh_offlineFiles',JSON.stringify(items));toast('✅ Saved for offline use','success');}catch(e){toast('This file cannot be saved offline. Check file sharing permissions.','error');}}
         async function openOfflineFile(url){const cache=await caches.open('psh-offline-files');const r=await cache.match(url);if(r){const blob=await r.blob();window.open(URL.createObjectURL(blob),'_blank');}else window.open(url,'_blank');}
@@ -3282,6 +3289,8 @@
             return url;
         }
         
+        function openFullscreenPreview(url) { const embed=getEmbedUrl(url); if(!embed)return; const box=document.createElement('div'); box.style.cssText='position:fixed;inset:0;z-index:100001;background:#0f172a;'; box.innerHTML=`<button onclick="this.parentElement.remove()" style="position:absolute;right:14px;top:14px;z-index:2;background:white;border:0;border-radius:10px;padding:10px 14px;font-weight:700;">✕ Close</button><iframe src="${embed}" style="width:100%;height:100%;border:0;" allowfullscreen></iframe>`; document.body.appendChild(box); }
+
         function togglePreview(itemId, url) {
             const previewEl = document.getElementById('preview-' + itemId);
             const frameEl = document.getElementById('preview-frame-' + itemId);
@@ -3863,5 +3872,5 @@
             document.getElementById('pwaInstallBanner').style.display = 'none';
         }
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a223100a4fd0a41c',t:'MTc4NTIzMzA5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
